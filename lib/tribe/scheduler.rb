@@ -1,5 +1,5 @@
 module Tribe
-  class Clock
+  class Scheduler
     FREQUENCY = 100 # Hz.
 
     def initialize(options = {})

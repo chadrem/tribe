@@ -6,7 +6,7 @@ require 'tribe/actor'
 require 'tribe/worker'
 require 'tribe/dispatcher'
 require 'tribe/registry'
-require 'tribe/clock'
+require 'tribe/scheduler'
 require 'tribe/timer'
 
 module Tribe
@@ -18,11 +18,11 @@ module Tribe
     @registry ||= Tribe::Registry.new
   end
 
-  def self.clock
-    @clock ||= Tribe::Clock.new
+  def self.scheduler
+    @scheduler ||= Tribe::Scheduler.new
   end
 end
 
 Tribe.dispatcher
 Tribe.registry
-Tribe.clock
+Tribe.scheduler

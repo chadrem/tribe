@@ -6,14 +6,14 @@ module Tribe
     def initialize(seconds, options = {}, &block)
       @seconds = seconds.to_f
       @callback = block
-      @clock = options[:clock] || Tribe.clock
+      @scheduler = options[:scheduler] || Tribe.scheduler
       @repeat = options[:repeat] || false
 
       schedule
     end
 
     def cancel
-      @clock.unschedule(self)
+      @scheduler.unschedule(self)
     end
 
     def <=>(timer)
@@ -45,7 +45,7 @@ module Tribe
 
     def schedule
       @fire_at = now + @seconds
-      @clock.schedule(self)
+      @scheduler.schedule(self)
     end
   end
 end
