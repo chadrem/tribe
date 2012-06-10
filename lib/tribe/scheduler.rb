@@ -8,10 +8,6 @@ module Tribe
       spawn(@count)
     end
 
-    def schedule(&block)
-      @messages.push({ :command => :perform, :task => block })
-    end
-
     def shutdown
       @count.times do
         @messages.push({ :command => :shutdown })
@@ -23,6 +19,10 @@ module Tribe
     end
 
     private
+    def schedule(&block)
+      @messages.push({ :command => :perform, :task => block })
+    end
+
     def spawn(count)
       count.times do
         worker = Worker.new(@messages)

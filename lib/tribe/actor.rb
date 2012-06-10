@@ -3,10 +3,15 @@ module Tribe
     attr_reader :name
 
     def initialize(options = {})
+      run_hook(:pre_init)
+
+      @alive = true
       @process_lock = Mutex.new
       @name = options[:name].freeze
 
       Tribe.registry.register(self)
+
+      run_hook(:post_init)
     end
 
     def method_missing(method, *args, &block)
@@ -14,14 +19,14 @@ module Tribe
       bang = m[-1] == '!'
 
       if bang && respond_to?(m.chop!)
-        async(m, *args)
+        tell(m, *args)
       else
         super
       end
     end
 
-    def async(method, *args)
-      Tribe.scheduler.schedule do
+    def tell(method, *args)
+      Tribe.scheduler.send(:schedule) do
         process(:method => method, :args => args)
       end
 
@@ -35,8 +40,13 @@ module Tribe
       end
     end
 
-    def shutdown
-      Tribe.registry.unregistry(self)
+    def terminate
+      @alive = false
+      Tribe.registry.unregister(self)
+    end
+
+    def run_hook(hook)
+      send(hook) if respond_to?(hook, true)
     end
   end
 end

@@ -54,3 +54,38 @@ rescue LoadError
 end
 
 require 'tribe'
+
+class MyActor < Tribe::Actor
+  def pre_init
+    @count = 0
+  end
+
+  def increment
+    @count += 1
+    puts "#{@name}=#{@count}" if @count >= 50000
+  end
+
+  def go(friend_name)
+    friend = Tribe.registry[friend_name]
+
+    50000.times do
+      friend.increment!
+    end
+  end
+end
+
+def tribe_demo
+  a1 = Tribe.registry['a1'] || MyActor.new(:name => 'a1')
+  a2 = Tribe.registry['a2'] || MyActor.new(:name => 'a2')
+  a3 = Tribe.registry['a3'] || MyActor.new(:name => 'a3')
+  a4 = Tribe.registry['a4'] || MyActor.new(:name => 'a4')
+  a5 = Tribe.registry['a5'] || MyActor.new(:name => 'a5')
+  a6 = Tribe.registry['a6'] || MyActor.new(:name => 'a6')
+
+  a1.go!('a2')
+  a2.go!('a1')
+  a3.go!('a4')
+  a4.go!('a3')
+  a5.go!('a6')
+  a6.go!('a5')
+end
