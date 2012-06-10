@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "tribe"
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Chad Remesch"]
@@ -28,14 +28,16 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/tribe.rb",
     "lib/tribe/actor.rb",
-    "lib/tribe/clock.rb",
+    "lib/tribe/dispatcher.rb",
+    "lib/tribe/mailbox.rb",
+    "lib/tribe/message.rb",
     "lib/tribe/registry.rb",
     "lib/tribe/scheduler.rb",
-    "lib/tribe/singleton.rb",
+    "lib/tribe/thread_pool.rb",
     "lib/tribe/timer.rb",
     "lib/tribe/worker.rb",
     "spec/lib/tribe/actor_spec.rb",
-    "spec/lib/tribe/clock_spec.rb",
+    "spec/lib/tribe/dispatcher_spec.rb",
     "spec/lib/tribe/registry_spec.rb",
     "spec/lib/tribe/scheduler_spec.rb",
     "spec/lib/tribe/timer_spec.rb",
