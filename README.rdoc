@@ -1,6 +1,6 @@
 = tribe
 
-Description goes here.
+Actor Model for Ruby.  Experimental.
 
 == Contributing to tribe
  
