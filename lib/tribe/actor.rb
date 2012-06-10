@@ -36,7 +36,11 @@ module Tribe
     private
     def process(message)
       @process_lock.synchronize do
-        send(message[:method], *message[:args])
+        begin
+          send(message[:method], *message[:args]) if @alive
+        rescue Exception => e
+          @alive = false
+        end
       end
     end
 
