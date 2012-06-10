@@ -22,3 +22,7 @@ module Tribe
     @clock ||= Tribe::Clock.new
   end
 end
+
+Tribe.scheduler
+Tribe.registry
+Tribe.clock
