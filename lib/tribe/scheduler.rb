@@ -1,5 +1,5 @@
 module Tribe
-  class Scheduler < Tribe::Singleton
+  class Scheduler
     def initialize(opts = {})
       @count = opts[:count] || 20
       @workers = []

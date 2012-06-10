@@ -3,7 +3,6 @@ require 'thread'
 require 'set'
 
 require 'tribe/actor'
-require 'tribe/singleton'
 require 'tribe/worker'
 require 'tribe/scheduler'
 require 'tribe/registry'
@@ -12,14 +11,14 @@ require 'tribe/timer'
 
 module Tribe
   def self.scheduler
-    Tribe::Scheduler.instance
+    @scheduler ||= Tribe::Scheduler.new
   end
 
   def self.registry
-    Tribe::Registry.instance
+    @registry ||= Tribe::Registry.new
   end
 
   def self.clock
-    Tribe::Clock.instance
+    @clock ||= Tribe::Clock.new
   end
 end

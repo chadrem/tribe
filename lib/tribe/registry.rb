@@ -1,6 +1,5 @@
 module Tribe
-  class Registry < Tribe::Singleton
-
+  class Registry
     def initialize
       @lock = Mutex.new
 

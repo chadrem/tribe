@@ -1,5 +1,5 @@
 module Tribe
-  class Clock < Tribe::Singleton
+  class Clock
     FREQUENCY = 100 # Hz.
 
     def initialize(options = {})
