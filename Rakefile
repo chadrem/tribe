@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "tribe"
   gem.homepage = "http://github.com/chadrem/tribe"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Actor Model for Ruby}
+  gem.description = %Q{Actor Model for Ruby.  Can support millions of actors (limited by memory). Currently experimental and not recommended for production.}
   gem.email = "chad@remesch.com"
   gem.authors = ["Chad Remesch"]
   # dependencies defined in Gemfile
