@@ -8,6 +8,9 @@ require 'tribe/dispatcher'
 require 'tribe/registry'
 require 'tribe/scheduler'
 require 'tribe/timer'
+require 'tribe/message'
+require 'tribe/mailbox'
+require 'tribe/thread_pool'
 
 module Tribe
   def self.dispatcher

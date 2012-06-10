@@ -1,33 +1,16 @@
 module Tribe
   class Dispatcher
-    def initialize(opts = {})
-      @count = opts[:count] || 20
-      @workers = []
-      @messages = Queue.new
-
-      spawn(@count)
+    def initialize(options = {})
+      @pool = ThreadPool.new(:count => options[:count])
     end
 
     def shutdown
-      @count.times do
-        @messages.push({ :command => :shutdown })
-      end
-
-      @workers.each do |worker|
-        worker.join
-      end
+      @pool.shutdown
     end
 
     private
     def schedule(&block)
-      @messages.push({ :command => :perform, :task => block })
-    end
-
-    def spawn(count)
-      count.times do
-        worker = Worker.new(@messages)
-        @workers.push(worker)
-      end
+      @pool.dispatch(&block)
     end
   end
 end

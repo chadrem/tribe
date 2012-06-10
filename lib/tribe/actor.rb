@@ -6,7 +6,7 @@ module Tribe
       run_hook(:pre_init)
 
       @alive = true
-      @process_lock = Mutex.new
+      @mailbox = Mailbox.new
       @name = options[:name].freeze
 
       Tribe.registry.register(self)
@@ -26,20 +26,25 @@ module Tribe
     end
 
     def tell(method, *args)
+      message = { :method => method, :args => args }
+      @mailbox.deliver(message)
+
       Tribe.dispatcher.send(:schedule) do
-        process(:method => method, :args => args)
+        process
       end
 
       true
     end
 
     private
-    def process(message)
-      @process_lock.synchronize do
+    def process
+      @mailbox.retrieve_each do |message|
         begin
-          send(message[:method], *message[:args]) if @alive
+          send(message[:method], *message[:args])
+          true
         rescue Exception => e
-          @alive = false
+          puts "Actor died while processing: #{e.message}\n#{e.backtrace.join("\n")}"
+          false
         end
       end
     end
