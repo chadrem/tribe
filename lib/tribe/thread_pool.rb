@@ -1,6 +1,6 @@
 module Tribe
   class ThreadPool
-    THREAD_COUNT = 20
+    THREAD_COUNT = 64
 
     def initialize(options = {})
       @count = options[:count] || THREAD_COUNT
