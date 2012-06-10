@@ -26,7 +26,7 @@ module Tribe
     end
 
     def tell(method, *args)
-      Tribe.scheduler.send(:schedule) do
+      Tribe.dispatcher.send(:schedule) do
         process(:method => method, :args => args)
       end
 

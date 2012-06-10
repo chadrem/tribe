@@ -1,5 +1,5 @@
 module Tribe
-  class Scheduler
+  class Dispatcher
     def initialize(opts = {})
       @count = opts[:count] || 20
       @workers = []

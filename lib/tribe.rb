@@ -4,14 +4,14 @@ require 'set'
 
 require 'tribe/actor'
 require 'tribe/worker'
-require 'tribe/scheduler'
+require 'tribe/dispatcher'
 require 'tribe/registry'
 require 'tribe/clock'
 require 'tribe/timer'
 
 module Tribe
-  def self.scheduler
-    @scheduler ||= Tribe::Scheduler.new
+  def self.dispatcher
+    @dispatcher ||= Tribe::Dispatcher.new
   end
 
   def self.registry
@@ -23,6 +23,6 @@ module Tribe
   end
 end
 
-Tribe.scheduler
+Tribe.dispatcher
 Tribe.registry
 Tribe.clock
