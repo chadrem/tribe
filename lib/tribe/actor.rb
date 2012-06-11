@@ -26,8 +26,7 @@ module Tribe
     end
 
     def tell(method, *args)
-      message = { :method => method, :args => args }
-      @mailbox.deliver(message)
+      @mailbox.deliver([ method, args ])
 
       Tribe.dispatcher.send(:schedule) do
         process
@@ -40,7 +39,7 @@ module Tribe
     def process
       @mailbox.retrieve_each do |message|
         begin
-          send(message[:method], *message[:args])
+          send(message[0], *message[1])
           true
         rescue Exception => e
           puts "Actor died while processing: #{e.message}\n#{e.backtrace.join("\n")}"

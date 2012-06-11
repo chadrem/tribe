@@ -11,22 +11,19 @@ module Tribe
     end
 
     def shutdown
-      message = { :command => :shutdown }
-      @messages.push(message)
+      @messages.push([ :shutdown ])
 
       @thread.join
     end
 
     def schedule(timer)
-      message = { :command => :schedule, :timer => timer }
-      @messages.push(message)
+      @messages.push([ :schedule, timer ])
 
       true
     end
 
     def unschedule(timer)
-      message = { :command => :unschedule, :timer => timer }
-      @messages.push(message)
+      @messages.push([ :unschedule, timer ])
 
       true
     end
@@ -46,15 +43,15 @@ module Tribe
       @messages.length.times do
         message = @messages.pop
 
-        case message[:command]
+        case message[0]
         when :schedule
-          @timers.add(message[:timer])
+          @timers.add(message[1])
         when :unschedule
-          @timers.delete(message[:timer])
+          @timers.delete(message[1])
         when :shutdown
           @run = false
         else
-          raise("Invalid command: #{message[:command]}")
+          raise("Invalid command: #{message[0]}")
         end
       end
     end

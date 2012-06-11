@@ -13,7 +13,7 @@ module Tribe
     end
 
     def dispatch(&block)
-      @queue.push({ :command => :perform, :task => block })
+      @queue.push([ :perform, block ])
 
       true
     end
@@ -21,7 +21,7 @@ module Tribe
     def shutdown
       @lock.synchronize do
         @count.times do
-          @queue.push({ :command => :shutdown })
+          @queue.push([ :shutdown ])
         end
 
         @threads.each { |thread| thread.join }
@@ -42,10 +42,10 @@ module Tribe
 
     def thread_main
       while (message = @queue.pop)
-        case message[:command]
+        case message[0]
         when :perform
           begin
-            message[:task].call
+            message[1].call
           rescue Exception => e
             puts "Worker caught exception: #{e.message}\n#{e.backtrace.join("\n")}"
           end
