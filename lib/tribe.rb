@@ -15,15 +15,15 @@ require 'tribe/thread_pool'
 module Tribe
   def self.dispatcher
     @dispatcher ||= Tribe::Dispatcher.new
-  end
+  end 
 
   def self.registry
     @registry ||= Tribe::Registry.new
-  end
+  end 
 
   def self.scheduler
     @scheduler ||= Tribe::Scheduler.new
-  end
+  end 
 end
 
 Tribe.dispatcher

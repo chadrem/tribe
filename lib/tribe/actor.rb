@@ -27,10 +27,7 @@ module Tribe
 
     def tell(method, *args)
       @mailbox.deliver([ method, args ])
-
-      Tribe.dispatcher.send(:schedule) do
-        process
-      end
+      Tribe.dispatcher.send(:schedule, self)
 
       true
     end

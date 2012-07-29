@@ -1,6 +1,6 @@
 module Tribe
   class Scheduler
-    FREQUENCY = 100 # Hz.
+    FREQUENCY = 1000 # Hz.
 
     def initialize(options = {})
       @frequency = options[:frequency] || FREQUENCY
@@ -30,7 +30,7 @@ module Tribe
 
     private
     def main
-      sleep_val = 1.0 / @frequency
+      sleep_val = 60.0 / @frequency
 
       while @run
         sleep(sleep_val)
