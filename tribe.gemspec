@@ -14,4 +14,6 @@ Gem::Specification.new do |gem|
   gem.name          = "tribe"
   gem.require_paths = ["lib"]
   gem.version       = Tribe::VERSION
+
+  # gem.add_dependency('eventmachine', ['>= 1.0.0.rc.4'])
 end
