@@ -1,6 +1,7 @@
 require 'singleton'
 require 'thread'
 require 'set'
+require 'securerandom'
 
 require 'tribe/actor'
 require 'tribe/worker'

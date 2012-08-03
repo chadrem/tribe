@@ -7,7 +7,7 @@ module Tribe
 
       @alive = true
       @mailbox = Mailbox.new
-      @name = options[:name].freeze
+      @name = (options[:name] || SecureRandom.uuid).freeze
 
       Tribe.registry.register(self)
 
