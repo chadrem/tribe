@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tribe (0.0.5)
+    tribe (0.0.6)
       workers (= 0.0.6)
 
 GEM
