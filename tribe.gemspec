@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Chad Remesch"]
   gem.email         = ["chad@remesch.com"]
   gem.description   = %q{Event driven actors for Ruby}
-  gem.summary       = %q{Event driven actors for Ruby designed for high performance.}
+  gem.summary       = %q{Event driven actors for Ruby}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
