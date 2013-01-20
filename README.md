@@ -20,7 +20,7 @@ Or install it yourself as:
 ## Actors
 
     # Create your custom actor class.
-    class MyActor < Workers::Actor
+    class MyActor < Tribe::Actor
       private
       def initialize(options = {})
         super
@@ -53,13 +53,13 @@ Or install it yourself as:
     
     # Send an event to each actors.  Find each actor using the registry.
     100.times do |i|
-      actor = Workers.registry["my_actor_#{i}"]
+      actor = Tribe.registry["my_actor_#{i}"]
       actor.enqueue(:my_custom, 'hello world')
     end
     
     # Shutdown the actors.
     100.times do |i|
-      actor = Workers.registry["my_actor_#{i}"]
+      actor = Tribe.registry["my_actor_#{i}"]
       actor.enqueue(:shutdown)
     end
 
@@ -70,23 +70,23 @@ Actors that block for long periods of time should use a dedicated thread (:dedic
 ## Registries
 
 Registries hold references to named actors.
-In general you shouldn't have to create your own since there is a global one (Workers.registry).
+In general you shouldn't have to create your own since there is a global one (Tribe.registry).
 
 ## Options (defaults below):
 
-    actor = Workers::Actor.new(
+    actor = Tribe::Actor.new(
       :logger => nil,                   # Ruby logger instance.
       :dedicated => false,              # If true, the actor runs with a worker pool that has one thread.
       :pool => Workers.pool,            # The workers pool used to execute events.
-      :mailbox => Workers::Mailbox.new, # The mailbox used to receive events.
-      :registry => Workers.registry,    # The registry used to store a reference to the actor if it has a name.
+      :mailbox => Tribe::Mailbox.new,   # The mailbox used to receive events.
+      :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
 
-    actor = Workers::DedicatedActor.new(
+    actor = Tribe::DedicatedActor.new(
       :logger => nil,                   # Ruby logger instance.
-      :mailbox => Workers::Mailbox.new, # The mailbox used to receive events.
-      :registry => Workers.registry,    # The registry used to store a reference to the actor if it has a name.
+      :mailbox => Tribe::Mailbox.new,   # The mailbox used to receive events.
+      :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
 
