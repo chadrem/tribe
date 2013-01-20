@@ -1,7 +1,7 @@
 # Tribe
 
 Tribe is a Ruby gem that implements event driven actors.
-Actors are light weight concurrent objects that use asynchronous message passing to communicate with each other.
+Actors are light weight concurrent objects that use asynchronous message passing for communication.
 
 ## Installation
 
