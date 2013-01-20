@@ -1,57 +1,79 @@
 module Tribe
   class Actor
-    attr_reader :name
+    include Workers::Helpers
 
     def initialize(options = {})
-      run_hook(:pre_init)
-
+      @logger = Workers::LogProxy.new(options[:logger])
+      @dedicated = options[:dedicated] || false
+      @mailbox = options[:mailbox] || Tribe::Mailbox.new
+      @registry = options[:registry] || Tribe.registry
+      @name = options[:name]
+      @pool = @dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
       @alive = true
-      @mailbox = Mailbox.new
-      @name = (options[:name] || SecureRandom.uuid).freeze
 
-      Tribe.registry.register(self)
-
-      run_hook(:post_init)
+      @registry.register(self)
     end
 
-    def method_missing(method, *args, &block)
-      m = method.to_s
-      bang = m[-1] == '!'
+    def enqueue(command, data = nil)
+      return false unless @alive
 
-      if bang && respond_to?(m.chop!)
-        tell(m, *args)
-      else
-        super
+      @mailbox.push(Workers::Event.new(command, data))
+
+      @pool.perform do
+        process_events
+      end
+
+      return true
+    end
+
+    def alive?
+      @mailbox.synchronize do
+        return @alive
       end
     end
 
-    def tell(method, *args)
-      @mailbox.deliver([ method, args ])
-      Tribe.dispatcher.send(:schedule, self)
+    def name
+      return @name
+    end
 
-      true
+    def identifier
+      return @name ? "#{object_id}:#{@name}" : object_id
     end
 
     private
-    def process
-      @mailbox.retrieve_each do |message|
-        begin
-          send(message[0], *message[1])
-          true
-        rescue Exception => e
-          puts "Actor died while processing: #{e.message}\n#{e.backtrace.join("\n")}"
-          false
+
+    def process_events
+      while (event = @mailbox.shift)
+        case event.command
+        when :shutdown
+          shutdown_handler(event)
+          @pool.shutdown if @dedicated
+          @mailbox.synchronize do
+            @alive = false
+          end
+        else
+          process_event(event)
         end
       end
-    end
-
-    def terminate
+    rescue Exception => e
       @alive = false
-      Tribe.registry.unregister(self)
+      exception_handler(e)
     end
 
-    def run_hook(hook)
-      send(hook) if respond_to?(hook, true)
+    #
+    # Subclass and override the below methods.
+    #
+
+    def process_event(event)
+      puts "Actor (#{identifier}) received event (#{event.inspect})."
+    end
+
+    def exception_handler(e)
+      puts concat_e("Actor (#{identifier}) died.", e)
+    end
+
+    def shutdown_handler(event)
+      puts "Actor (#{identifier}) is shutting down."
     end
   end
 end

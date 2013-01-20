@@ -1,32 +1,20 @@
-require 'singleton'
-require 'thread'
-require 'set'
-require 'securerandom'
+require 'workers'
 
-require 'tribe/actor'
-require 'tribe/worker'
-require 'tribe/dispatcher'
-require 'tribe/registry'
-require 'tribe/scheduler'
-require 'tribe/timer'
-require 'tribe/message'
 require 'tribe/mailbox'
-require 'tribe/thread_pool'
+require 'tribe/actor'
+require 'tribe/dedicated_actor'
+require 'tribe/registry'
 
 module Tribe
-  def self.dispatcher
-    @dispatcher ||= Tribe::Dispatcher.new
-  end 
-
   def self.registry
-    @registry ||= Tribe::Registry.new
+    return @registry ||= Tribe::Registry.new
   end 
 
-  def self.scheduler
-    @scheduler ||= Tribe::Scheduler.new
+  def self.registry=(val)
+    @registry.dispose if @registry
+    @registry = val 
   end 
 end
 
-Tribe.dispatcher
+# Force initialization of defaults.
 Tribe.registry
-Tribe.scheduler

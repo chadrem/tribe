@@ -4,8 +4,8 @@ require File.expand_path('../lib/tribe/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Chad Remesch"]
   gem.email         = ["chad@remesch.com"]
-  gem.description   = %q{Actor Model for Ruby}
-  gem.summary       = %q{Actor Model for Ruby designed for high performance and millions of event driven actors.}
+  gem.description   = %q{Event driven actors for Ruby}
+  gem.summary       = %q{Event driven actors for Ruby designed for high performance.}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
@@ -14,4 +14,6 @@ Gem::Specification.new do |gem|
   gem.name          = "tribe"
   gem.require_paths = ["lib"]
   gem.version       = Tribe::VERSION
+
+  gem.add_dependency('workers', ['0.0.6'])
 end
