@@ -15,7 +15,7 @@ module Tribe
     end
 
     def enqueue(command, data = nil)
-      return false unless @alive
+      return false unless alive?
 
       @mailbox.push(Workers::Event.new(command, data))
 
@@ -55,9 +55,18 @@ module Tribe
           process_event(event)
         end
       end
+
     rescue Exception => e
       @alive = false
       exception_handler(e)
+    ensure
+      @mailbox.release do
+        @pool.perform do
+          process_events
+        end
+      end
+
+      return nil
     end
 
     #
@@ -65,7 +74,7 @@ module Tribe
     #
 
     def process_event(event)
-      puts "Actor (#{identifier}) received event (#{event.inspect})."
+      puts "Actor (#{identifier}) processing event (#{event.inspect}) using thread (#{Thread.current.object_id})."
     end
 
     def exception_handler(e)
