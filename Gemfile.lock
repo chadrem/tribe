@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tribe (0.0.4)
+    tribe (0.0.5)
       workers (= 0.0.6)
 
 GEM
@@ -10,6 +10,7 @@ GEM
     workers (0.0.6)
 
 PLATFORMS
+  java
   ruby
 
 DEPENDENCIES
