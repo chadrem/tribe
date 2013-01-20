@@ -19,9 +19,6 @@ Or install it yourself as:
 
 ## Actors
 
-Actors are light weight concurrent objects that use asynchronous message passing to communicate with each other.
-They are event driven and use a worker pool in order to execute their event loop.
-
     # Create your custom actor class.
     class MyActor < Workers::Actor
       private
