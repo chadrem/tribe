@@ -17,3 +17,5 @@ test/version_tmp
 tmp
 .gitignore
 .DS_Store
+*.swp
+.rvmrc
