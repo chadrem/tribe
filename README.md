@@ -93,7 +93,7 @@ In general you shouldn't have to create your own since there is a global one (Wo
 ## TODO - missing features
 
 - Futures.
-- Timer integration.
+- Workers::Timer integration.
 - Supervisors.
 - Linking.
 
