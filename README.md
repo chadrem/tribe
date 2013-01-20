@@ -90,6 +90,13 @@ In general you shouldn't have to create your own since there is a global one (Wo
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
 
+## TODO - missing features
+
+- Futures.
+- Timer integration.
+- Supervisors.
+- Linking.
+
 ## Contributing
 
 1. Fork it
