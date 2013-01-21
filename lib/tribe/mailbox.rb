@@ -5,10 +5,13 @@ module Tribe
       @mutex = Mutex.new
     end
 
-    def push(event)
+    def push(event, &block)
       @mutex.synchronize do
         @messages.push(event)
+        block.call unless @current_thread
       end
+
+      return nil
     end
 
     def shift
@@ -17,44 +20,25 @@ module Tribe
 
         @current_thread = Thread.current unless @current_thread
 
-        @messages.shift
+        return @messages.shift
       end
     end
 
-    def release(&requeue_block)
+    def release(&block)
       @mutex.synchronize do
         @current_thread = nil
-
-        if requeue_block && @messages.length > 0
-          requeue_block.call
-        end
+        block.call if block && @messages.length > 0
       end
+
+      return nil
     end
 
     def synchronize(&block)
       @mutex.synchronize do
         block.call
       end
+
+      return nil
     end
-
-    # def obtain
-    #   @mutex.synchronize do
-    #     return false if @current_thread && @current_thread != Thread.current
-
-    #     @current_thread = Thread.current
-
-    #     return true
-    #   end
-    # end
-
-    # def release
-    #   @mutex.synchronize do
-    #     return false unless @current_thread && @current_thread == Thread.current
-
-    #     @current_thread = nil
-
-    #     return true
-    #   end
-    # end
   end
 end

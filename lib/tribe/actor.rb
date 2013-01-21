@@ -17,19 +17,15 @@ module Tribe
     def enqueue(command, data = nil)
       return false unless alive?
 
-      @mailbox.push(Workers::Event.new(command, data))
-
-      @pool.perform do
-        process_events
+      @mailbox.push(Workers::Event.new(command, data)) do
+        @pool.perform { process_events }
       end
 
       return true
     end
 
     def alive?
-      @mailbox.synchronize do
-        return @alive
-      end
+      @mailbox.synchronize { return @alive }
     end
 
     def name
@@ -48,9 +44,7 @@ module Tribe
         when :shutdown
           shutdown_handler(event)
           @pool.shutdown if @dedicated
-          @mailbox.synchronize do
-            @alive = false
-          end
+          @mailbox.synchronize { @alive = false }
         else
           process_event(event)
         end
@@ -61,9 +55,7 @@ module Tribe
       exception_handler(e)
     ensure
       @mailbox.release do
-        @pool.perform do
-          process_events
-        end
+        @pool.perform { process_events }
       end
 
       return nil
