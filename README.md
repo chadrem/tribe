@@ -108,7 +108,3 @@ In general you shouldn't have to create your own since there is a global one (Tr
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
-
-## Copyright
-
-Copyright (c) 2012 Chad Remesch. See LICENSE.txt for further details.
