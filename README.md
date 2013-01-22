@@ -5,6 +5,7 @@ Actors are light weight concurrent objects that use asynchronous message passing
 They make a lot of real world concurrency problems easier to implement and higher performance when used properly.
 Tribe focuses on high performance, low latency, easy to use API, and flexability.
 It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers") gem which allows it to support many actors (millions should be possible).
+By default, actors share a thread pool though you can force one of more of your actors to dedicated threads.
 
 ## Installation
 
