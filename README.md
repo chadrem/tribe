@@ -68,7 +68,7 @@ Or install it yourself as:
     end
 
 ### Implementation notes
-Because actors use a shared thread pool, it is important that they don't block for long periods of time.
+Because actors use a shared thread pool, it is important that they don't block for long periods of time (short periods are fine).
 Actors that block for long periods of time should use a dedicated thread (:dedicated => true or subclass from Tribe::DedicatedActor).
 
 ## Registries
