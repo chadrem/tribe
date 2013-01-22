@@ -55,7 +55,7 @@ Or install it yourself as:
       MyActor.new(:name => "my_actor_#{i}")
     end
     
-    # Send an event to each actors.  Find each actor using the registry.
+    # Send an event to each actors.  Find each actor using the global registry.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
       actor.enqueue(:my_custom, 'hello world')
