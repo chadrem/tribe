@@ -2,7 +2,7 @@
 
 Tribe is a Ruby gem that implements event driven [actors] (http://en.wikipedia.org/wiki/Actor_model "actors").
 Actors are light weight concurrent objects that use asynchronous message passing for communication.
-They make a lot of real world concurrent problems easier to implement and higher performance.
+They make a lot of real world concurrency problems easier to implement and higher performance when used properly.
 Tribe focuses on high performance, low latency, easy to use API, and flexability.
 It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers") gem which allows it to support many actors (millions should be possible).
 
