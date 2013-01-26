@@ -1,6 +1,6 @@
 # Tribe
 
-Tribe is a Ruby gem that implements event driven [actors] (http://en.wikipedia.org/wiki/Actor_model "actors").
+Tribe is a Ruby gem that implements event-driven [actors] (http://en.wikipedia.org/wiki/Actor_model "actors").
 Actors are lightweight concurrent objects that use asynchronous message passing for communication.
 Tribe focuses on high performance, low latency, an easy to use API, and flexibility.
 It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers") gem, which allows it to support many actors (millions should be possible).
