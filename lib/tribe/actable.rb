@@ -52,6 +52,7 @@ module Tribe
 
     rescue Exception => e
       @alive = false
+      @pool.shutdown if @dedicated
       exception_handler(e)
     ensure
       @mailbox.release do
