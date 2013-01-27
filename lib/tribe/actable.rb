@@ -65,16 +65,10 @@ module Tribe
       send("on_#{event.command}", event)
     end
 
-    def on_test(event)
-      puts "Actor (#{identifier}) processing event (#{event.inspect}) using thread (#{Thread.current.object_id})."
-    end
-
     def exception_handler(e)
-      puts concat_e("Actor (#{identifier}) died.", e)
     end
 
     def shutdown_handler(event)
-      puts "Actor (#{identifier}) is shutting down."
     end
   end
 end
