@@ -61,11 +61,11 @@ module Tribe
       return nil
     end
 
-    #
-    # Subclass and override the below methods.
-    #
-
     def process_event(event)
+      send("on_#{event.command}", event)
+    end
+
+    def on_test(event)
       puts "Actor (#{identifier}) processing event (#{event.inspect}) using thread (#{Thread.current.object_id})."
     end
 
