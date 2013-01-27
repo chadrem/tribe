@@ -29,14 +29,7 @@ Or install it yourself as:
         super
       end
       
-      def process_event(event)
-       case event.command
-       when :my_custom
-         my_custom_handler(event)
-       end
-      end
-      
-      def my_custom_handler(event)
+      def on_my_custom(event)
         puts "Received a custom event (#{event.inspect})"
       end
       
