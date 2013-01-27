@@ -37,10 +37,12 @@ Or install it yourself as:
       
       def exception_handler(e)
         puts concat_e("MyActor (#{identifier}) died.", e)
+        super
       end
       
       def shutdown_handler(event)
         puts "MyActor (#{identifier}) is shutting down.  Put cleanup code here."
+        super
       end
     end
     
