@@ -6,6 +6,8 @@ Tribe focuses on high performance, low latency, an easy to use API, and flexibil
 It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers") gem, which allows it to support many actors (millions should be possible).
 Actors can use a shared thread pool (default) or dedicted threads.
 
+Event-driven servers can be built using [Tribe EM] (https://github.com/chadrem/tribe_em "Tribe EM").
+
 ## Installation
 
 Add this line to your application's Gemfile:
