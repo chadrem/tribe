@@ -42,17 +42,15 @@ module Tribe
       while (event = @mailbox.shift)
         case event.command
         when :shutdown
+          cleanup
           shutdown_handler(event)
-          @pool.shutdown if @dedicated
-          @mailbox.synchronize { @alive = false }
         else
           process_event(event)
         end
       end
 
     rescue Exception => e
-      @alive = false
-      @pool.shutdown if @dedicated
+      cleanup
       exception_handler(e)
     ensure
       @mailbox.release do
@@ -62,13 +60,24 @@ module Tribe
       return nil
     end
 
+    def cleanup
+      @pool.shutdown if @dedicated
+      @mailbox.synchronize { @alive = false }
+      @registry.unregister(self)
+
+      return nil
+    end
+
+    # Override and call super as necessary.
     def process_event(event)
       send("on_#{event.command}", event)
     end
 
+    # Override and call super as necessary.
     def exception_handler(e)
     end
 
+    # Override and call super as necessary.
     def shutdown_handler(event)
     end
   end

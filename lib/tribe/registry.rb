@@ -3,30 +3,26 @@ module Tribe
     def initialize
       @mutex = Mutex.new
       @actors_by_name = {}
+      @actors_by_oid = {}
     end
 
     def register(actor)
       @mutex.synchronize do
-        return false unless actor.name
+        raise("Actor already exists (#{actor.name}).") if @actors_by_name.key?(actor.name)
 
-        if @actors_by_name[actor.name]
-          raise "Actor already exists (#{actor.name})."
-        else
-          @actors_by_name[actor.name] = actor
-        end
+        @actors_by_name[actor.name] = actor if actor.name
+        @actors_by_oid[actor.object_id] = actor
 
-        return true
+        return nil
       end
     end
 
     def unregister(actor)
       @mutex.synchronize do
-        return false unless actor.name
-        return false unless @actors_by_name[actor.name]
+        @actors_by_name.delete(actor.name) if actor.name
+        @actors_by_oid.delete(actor.object_id)
 
-        @actors_by_name.delete(actor.name)
-
-        return true
+        return nil
       end
     end
 
@@ -39,6 +35,15 @@ module Tribe
     def dispose
       @mutex.synchronize do
         @actors_by_name.clear
+        @actors_by_oid.clear
+
+        return nil
+      end
+    end
+
+    def inspect
+      @mutex.synchronize do
+        return "#<#{self.class.to_s}:0x#{(object_id << 1).to_s(16)} oid_count=#{@actors_by_oid.count}, named_count=#{@actors_by_name.count}>"
       end
     end
   end
