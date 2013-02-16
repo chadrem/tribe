@@ -54,7 +54,7 @@ module Tribe
       exception_handler(e)
     ensure
       @mailbox.release do
-        @pool.perform { process_events }
+        @pool.perform { process_events if @alive }
       end
 
       return nil
