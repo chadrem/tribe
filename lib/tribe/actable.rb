@@ -7,6 +7,7 @@ module Tribe
       @dedicated = options[:dedicated] || false
       @mailbox = options[:mailbox] || Tribe::Mailbox.new
       @registry = options[:registry] || Tribe.registry
+      @scheduler = options[:scheduler] || Workers.scheduler
       @name = options[:name]
       @pool = @dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
       @alive = true
@@ -79,6 +80,22 @@ module Tribe
 
     # Override and call super as necessary.
     def shutdown_handler(event)
+    end
+
+    def timer(delay, command, data = nil)
+      timer = Workers::Timer.new(delay, :scheduler => @scheduler) do
+        enqueue(command, data)
+      end
+
+      return timer
+    end
+
+    def periodic_timer(delay, command, data = nil)
+      timer = Workers::PeriodicTimer.new(delay, :scheduler => @scheduler) do
+        enqueue(command, data)
+      end
+
+      return timer
     end
   end
 end
