@@ -1,5 +1,8 @@
+require 'set'
+
 require 'workers'
 
+require 'tribe/safe_set'
 require 'tribe/mailbox'
 require 'tribe/actable'
 require 'tribe/actor'
