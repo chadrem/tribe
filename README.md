@@ -130,7 +130,6 @@ Both one-shot and periodic timers are provides.
 ## TODO - missing features
 
 - Futures.
-- Workers::Timer integration.
 - Supervisors.
 - Linking.
 
