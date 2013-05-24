@@ -90,6 +90,43 @@ In general you shouldn't have to create your own since there is a global one (Tr
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
 
+## Timers
+
+Actors can create timers to perform some work in the future.
+Both one-shot and periodic timers are provides.
+
+    class MyActor < Tribe::Actor
+      private
+      def initialize(options = {})
+        super
+
+        timer(1, :timer, Time.now)
+        periodic_timer(1, :periodic_timer, Time.now)
+      end
+
+      def on_timer(event)
+        puts "MyActor (#{identifier}) ONE-SHOT: #{event.data}"
+      end
+
+      def on_periodic_timer(event)
+        puts "MyActor (#{identifier}) PERIODIC: #{event.data}"
+      end
+    end
+
+    # Create some named actors.
+    10.times do |i|
+      MyActor.new(:name => "my_actor_#{i}")
+    end
+
+    # Sleep in order to observe the timers.
+    sleep 10
+
+    # Shutdown the actors.
+    10.times do |i|
+      actor = Tribe.registry["my_actor_#{i}"]
+      actor.enqueue(:shutdown)
+    end
+
 ## TODO - missing features
 
 - Futures.
