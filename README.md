@@ -63,11 +63,11 @@ Or install it yourself as:
       actor.enqueue(:shutdown)
     end
 
-### Implementation notes
+#### Implementation notes
 Because actors use a shared thread pool, it is important that they don't block for long periods of time (short periods are fine).
 Actors that block for long periods of time should use a dedicated thread (:dedicated => true or subclass from Tribe::DedicatedActor).
 
-### Options (defaults below):
+#### Options (defaults below):
 
     actor = Tribe::Actor.new(
       :logger => nil,                   # Ruby logger instance.
@@ -133,16 +133,17 @@ Both one-shot and periodic timers are provides.
       actor.enqueue(:shutdown)
     end
 
-## Futures (experimental feature)
+## Futures (experimental)
 
 Futures allow an actor to ask another actor to perform a computation and then return the result.
 Tribe includes both blocking and non-blocking actors.
 You should prefer to use non-blocking actors in your code when possible due to performance reasons (see details below).
 
-### Non-blocking
+#### Non-blocking
 
-Non-blocking futures are event driven and use callbacks.
+Non-blocking actors are asynchronous and use callbacks.
 No waiting for a result is involved.
+The actor will continue to process other events.
 
     class ActorA < Tribe::Actor
     private
@@ -198,7 +199,10 @@ No waiting for a result is involved.
 This ensures that your code executes within the context of the correct actor.
 Failure to do so will result in race conditions and other nasty things.
 
-### Blocking
+#### Blocking
+
+Blocking actors are synchronous.
+The actor won't process any other events until the future has a result.
 
     class ActorA < Tribe::Actor
     private
@@ -246,7 +250,7 @@ Failure to do so will result in race conditions and other nasty things.
     actor_a.enqueue(:shutdown)
     actor_b.enqueue(:shutdown)
 
-### Futures and Performance
+#### Futures and Performance
 
 You should prefer non-blocking futures as much as possible in your application code.
 This is because blocking futures (Future#wait) causes the current actor (and thread) to sleep.
