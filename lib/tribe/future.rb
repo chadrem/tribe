@@ -5,7 +5,6 @@ module Tribe
       @mutex = Mutex.new
       @condition = ConditionVariable.new
       @result = nil
-      @success = nil
       @success_callback = nil
       @failure_callback = nil
 
@@ -58,7 +57,7 @@ module Tribe
       @mutex.synchronize do
         raise 'Result must be set first.' unless @state == :finished
 
-        return !@success.is_a?(Exception)
+        return !@result.is_a?(Exception)
       end
     end
 

@@ -1,13 +1,13 @@
 PATH
   remote: .
   specs:
-    tribe (0.0.11)
-      workers (= 0.1.1)
+    tribe (0.1.0)
+      workers (= 0.1.2)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    workers (0.1.1)
+    workers (0.1.2)
 
 PLATFORMS
   java

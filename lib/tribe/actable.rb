@@ -1,26 +1,36 @@
+# This module is designed to be mixed in with your application code.
+# Because of this, all instance variables are prefixed with an underscore.
+# The hope is to minimize the chances of conflicts.
+# Long term my goal is to move all of these variables into an ActorState object.
+
 module Tribe
   module Actable
     include Workers::Helpers
 
-    def init_actable(options = {})
-      @logger = Workers::LogProxy.new(options[:logger])
-      @dedicated = options[:dedicated] || false
-      @mailbox = options[:mailbox] || Tribe::Mailbox.new
-      @registry = options[:registry] || Tribe.registry
-      @scheduler = options[:scheduler] || Workers.scheduler
-      @timers = Tribe::SafeSet.new
-      @name = options[:name]
-      @pool = @dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
-      @alive = true
+    private
 
-      @registry.register(self)
+    def init_actable(options = {})
+      @_logger = Workers::LogProxy.new(options[:logger])
+      @_dedicated = options[:dedicated] || false
+      @_mailbox = options[:mailbox] || Tribe::Mailbox.new
+      @_registry = options[:registry] || Tribe.registry
+      @_scheduler = options[:scheduler] || Workers.scheduler
+      @_timers = Tribe::SafeSet.new
+      @_name = options[:name]
+      @_pool = @_dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
+      @_alive = true
+      @_futures = Tribe::SafeSet.new
+
+      @_registry.register(self)
     end
+
+    public
 
     def enqueue(command, data = nil)
       return false unless alive?
 
-      @mailbox.push(Workers::Event.new(command, data)) do
-        @pool.perform { process_events }
+      @_mailbox.push(Workers::Event.new(command, data)) do
+        @_pool.perform { process_events }
       end
 
       return true
@@ -28,6 +38,7 @@ module Tribe
 
     def enqueue_future(command, data = nil)
       future = Tribe::Future.new
+      @_futures.add(future)
 
       perform do
         begin
@@ -36,6 +47,8 @@ module Tribe
         rescue Exception => e
           future.result = e
           raise
+        ensure
+          @_futures.delete(future)
         end
       end
 
@@ -43,15 +56,15 @@ module Tribe
     end
 
     def alive?
-      @mailbox.synchronize { return @alive }
+      @_mailbox.synchronize { return @_alive }
     end
 
     def name
-      return @name
+      return @_name
     end
 
     def identifier
-      return @name ? "#{object_id}:#{@name}" : object_id
+      return @_name ? "#{object_id}:#{@_name}" : object_id
     end
 
     def shutdown
@@ -64,8 +77,20 @@ module Tribe
 
     private
 
+    def registry
+      return @_registry
+    end
+
+    def pool
+      return @_pool
+    end
+
+    def logger
+      return @_logger
+    end
+
     def process_events
-      while (event = @mailbox.shift)
+      while (event = @_mailbox.shift)
         case event.command
         when :shutdown
           cleanup
@@ -78,20 +103,22 @@ module Tribe
       end
 
     rescue Exception => e
-      cleanup
+      cleanup(e)
       exception_handler(e)
     ensure
-      @mailbox.release do
-        @pool.perform { process_events if @alive }
+      @_mailbox.release do
+        @_pool.perform { process_events if @_alive }
       end
 
       return nil
     end
 
-    def cleanup
-      @pool.shutdown if @dedicated
-      @mailbox.synchronize { @alive = false }
-      @registry.unregister(self)
+    def cleanup(e = nil)
+      @_pool.shutdown if @_dedicated
+      @_mailbox.synchronize { @_alive = false }
+      @_registry.unregister(self)
+      @_timers.each { |t| t.cancel }
+      @_futures.each { |f| f.result = e || Tribe::ActorShutdownError.new }
 
       return nil
     end
@@ -109,16 +136,6 @@ module Tribe
 
     # Override and call super as necessary.
     def shutdown_handler(event)
-      shutdown_timers
-
-      return nil
-    end
-
-    def shutdown_timers
-      @timers.each do |timer|
-        timer.cancel
-      end
-
       return nil
     end
 
@@ -129,32 +146,28 @@ module Tribe
     end
 
     def timer(delay, command, data = nil)
-      timer = Workers::Timer.new(delay, :scheduler => @scheduler) do
-        @timers.delete(timer)
+      timer = Workers::Timer.new(delay, :scheduler => @_scheduler) do
+        @_timers.delete(timer)
         enqueue(command, data)
       end
 
-      @timers.add(timer)
+      @_timers.add(timer)
 
       return timer
     end
 
     def periodic_timer(delay, command, data = nil)
-      timer = Workers::PeriodicTimer.new(delay, :scheduler => @scheduler) do
+      timer = Workers::PeriodicTimer.new(delay, :scheduler => @_scheduler) do
         enqueue(command, data)
         unless alive?
-          @timers.delete(timer)
+          @_timers.delete(timer)
           timer.cancel
         end
       end
 
-      @timers.add(timer)
+      @_timers.add(timer)
 
       return timer
-    end
-
-    def registry
-      return @registry
     end
   end
 end
