@@ -99,7 +99,7 @@ In general you shouldn't have to create your own since there is a global one (Tr
 ## Timers
 
 Actors can create timers to perform some work in the future.
-Both one-shot and periodic timers are provides.
+Both one-shot and periodic timers are provided.
 
     class MyActor < Tribe::Actor
       private
