@@ -251,7 +251,7 @@ The actor won't process any other events until the future has a result.
 You should prefer non-blocking futures as much as possible in your application code.
 This is because a blocking future (Future#wait) causes the current actor (and thread) to sleep.
 
-Tribe is designed specifically to support having a large number of actors running on a small number of threads.
+Tribe is designed specifically to support a large number of actors running on a small number of threads.
 Thus, you will run into performance and/or deadlock problems if too many actors are waiting at the same time.
 
 If you choose to use blocing futures then it is highly recommended that you only use them with dedicated actors.
