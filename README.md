@@ -78,12 +78,8 @@ Actors that block for long periods of time should use a dedicated thread (:dedic
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
 
-    actor = Tribe::DedicatedActor.new(
-      :logger => nil,                   # Ruby logger instance.
-      :mailbox => Tribe::Mailbox.new,   # The mailbox used to receive events.
-      :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
-      :name => nil                      # The name of the actor (must be unique in the registry).
-    )
+    The DedicatedActor class is a simple wrapper around the Actor class.
+    It takes all the same options except for :pool and :dedicated since they aren't applicable.
 
 ## Registries
 
