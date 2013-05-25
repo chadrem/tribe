@@ -26,6 +26,22 @@ module Tribe
       return true
     end
 
+    def enqueue_future(command, data = nil)
+      future = Tribe::Future.new
+
+      perform do
+        begin
+          result = result = process_event(Workers::Event.new(command, data))
+          future.result = result
+        rescue Exception => e
+          future.result = e
+          raise
+        end
+      end
+
+      return future
+    end
+
     def alive?
       @mailbox.synchronize { return @alive }
     end
@@ -38,6 +54,14 @@ module Tribe
       return @name ? "#{object_id}:#{@name}" : object_id
     end
 
+    def shutdown
+      return enqueue(:shutdown)
+    end
+
+    def perform(&block)
+      return enqueue(:perform, block)
+    end
+
     private
 
     def process_events
@@ -46,6 +70,8 @@ module Tribe
         when :shutdown
           cleanup
           shutdown_handler(event)
+        when :perform
+          perform_handler(event)
         else
           process_event(event)
         end
@@ -71,10 +97,9 @@ module Tribe
     end
 
     # Override and call super as necessary.
+    # Note that the return value is used as the result of a future.
     def process_event(event)
-      send("on_#{event.command}", event)
-
-      return nil
+      return send("on_#{event.command}", event)
     end
 
     # Override and call super as necessary.
@@ -93,6 +118,12 @@ module Tribe
       @timers.each do |timer|
         timer.cancel
       end
+
+      return nil
+    end
+
+    def perform_handler(event)
+      event.data.call
 
       return nil
     end
@@ -120,6 +151,10 @@ module Tribe
       @timers.add(timer)
 
       return timer
+    end
+
+    def registry
+      return @registry
     end
   end
 end

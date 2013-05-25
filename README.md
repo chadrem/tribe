@@ -30,33 +30,33 @@ Or install it yourself as:
       def initialize(options = {})
         super
       end
-      
+
       def on_my_custom(event)
         puts "Received a custom event (#{event.inspect})"
       end
-      
+
       def exception_handler(e)
         super
         puts concat_e("MyActor (#{identifier}) died.", e)
       end
-      
+
       def shutdown_handler(event)
         super
         puts "MyActor (#{identifier}) is shutting down.  Put cleanup code here."
       end
     end
-    
+
     # Create some named actors.
     100.times do |i|
       MyActor.new(:name => "my_actor_#{i}")
     end
-    
+
     # Send an event to each actors.  Find each actor using the global registry.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
       actor.enqueue(:my_custom, 'hello world')
     end
-    
+
     # Shutdown the actors.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
@@ -67,12 +67,7 @@ Or install it yourself as:
 Because actors use a shared thread pool, it is important that they don't block for long periods of time (short periods are fine).
 Actors that block for long periods of time should use a dedicated thread (:dedicated => true or subclass from Tribe::DedicatedActor).
 
-## Registries
-
-Registries hold references to named actors.
-In general you shouldn't have to create your own since there is a global one (Tribe.registry).
-
-## Options (defaults below):
+### Options (defaults below):
 
     actor = Tribe::Actor.new(
       :logger => nil,                   # Ruby logger instance.
@@ -89,6 +84,17 @@ In general you shouldn't have to create your own since there is a global one (Tr
       :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
+
+## Registries
+
+Registries hold references to named actors so that you can easily find them.
+In general you shouldn't have to create your own since there is a global one (Tribe.registry).
+
+    actor = Tribe::Actor.new(:name => 'some_actor')
+
+    if actor == Tribe.registry['some_actor']
+      puts 'Successfully found some_actor in the registry.'
+    end
 
 ## Timers
 
@@ -127,9 +133,133 @@ Both one-shot and periodic timers are provides.
       actor.enqueue(:shutdown)
     end
 
+## Futures (experimental feature)
+
+Futures allow an actor to ask another actor to perform a computation and then return the result.
+Tribe includes both blocking and non-blocking actors.
+You should prefer to use non-blocking actors in your code when possible due to performance reasons (see details below).
+
+### Non-blocking
+
+Non-blocking futures are event driven and use callbacks.
+No waiting for a result is involved.
+
+    class ActorA < Tribe::Actor
+    private
+      def exception_handler(e)
+        super
+        puts concat_e("ActorA (#{identifier}) died.", e)
+      end
+
+      def on_start(event)
+        friend = registry['actor_b']
+
+        future = friend.enqueue_future(:compute, 10)
+
+        future.success do |result|
+          perform do
+            puts "ActorA (#{identifier}) future result: #{result}"
+          end
+        end
+
+        future.failure do |exception|
+          perform do
+            puts "ActorA (#{identifier}) future failure: #{exception}"
+          end
+        end
+      end
+    end
+
+    class ActorB < Tribe::Actor
+      def exception_handler(e)
+        super
+        puts concat_e("ActorB (#{identifier}) died.", e)
+      end
+
+      def on_compute(event)
+        return factorial(event.data)
+      end
+
+      def factorial(num)
+        return 1 if num <= 0
+        return num * factorial(num - 1)
+      end
+    end
+
+    actor_a = ActorA.new(:name => 'actor_a')
+    actor_b = ActorB.new(:name => 'actor_b')
+
+    actor_a.enqueue(:start)
+
+    actor_a.enqueue(:shutdown)
+    actor_b.enqueue(:shutdown)
+
+*Important*: You must use Actor#perform inside the above callbacks.
+This ensures that your code executes within the context of the correct actor.
+Failure to do so will result in race conditions and other nasty things.
+
+### Blocking
+
+    class ActorA < Tribe::Actor
+    private
+      def exception_handler(e)
+        super
+        puts concat_e("ActorA (#{identifier}) died.", e)
+      end
+
+      def on_start(event)
+        friend = registry['actor_b']
+
+        future = friend.enqueue_future(:compute, 10)
+
+        future.wait # The current thread will sleep until a result is available.
+
+        if future.success?
+          puts "ActorA (#{identifier}) future result: #{future.result}"
+        else
+          puts "ActorA (#{identifier}) future failure: #{future.result}"
+        end
+      end
+    end
+
+    class ActorB < Tribe::Actor
+      def exception_handler(e)
+        super
+        puts concat_e("ActorB (#{identifier}) died.", e)
+      end
+
+      def on_compute(event)
+        return factorial(event.data)
+      end
+
+      def factorial(num)
+        return 1 if num <= 0
+        return num * factorial(num - 1)
+      end
+    end
+
+    actor_a = ActorA.new(:name => 'actor_a')
+    actor_b = ActorB.new(:name => 'actor_b')
+
+    actor_a.enqueue(:start)
+
+    actor_a.enqueue(:shutdown)
+    actor_b.enqueue(:shutdown)
+
+### Futures and Performance
+
+You should prefer non-blocking futures as much as possible in your application code.
+This is because blocking futures (Future#wait) causes the current actor (and thread) to sleep.
+
+Tribe is designed specifically to support having a large number of actors running on a small number of threads.
+Thus, you will run into performance and/or deadlock problems if too many actors are waiting at the same time.
+
+If you choose to use blocing futures then it is highly recommended that you only use them with dedicated actors.
+Each dedicated actor runs in a separate thread (instead of a shared thread pool).
+The downside to using dedicated actors is that they consume more resources and you can't have as many of them.
+
 ## TODO - missing features
 
-- Futures.
 - Supervisors.
 - Linking.
 
