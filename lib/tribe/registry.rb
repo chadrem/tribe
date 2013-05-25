@@ -8,7 +8,7 @@ module Tribe
 
     def register(actor)
       @mutex.synchronize do
-        raise("Actor already exists (#{actor.name}).") if @actors_by_name.key?(actor.name)
+        raise Tribe::RegistryError.new("Actor already exists (#{actor.name}).") if @actors_by_name.key?(actor.name)
 
         @actors_by_name[actor.name] = actor if actor.name
         @actors_by_oid[actor.object_id] = actor

@@ -19,7 +19,7 @@ module Tribe
 
     def result=(val)
       @mutex.synchronize do
-        raise 'Result must only be set once.' unless @state == :initialized
+        raise Tribe::FutureError.new('Result must only be set once.') unless @state == :initialized
 
         @result = val
         @state = :finished
@@ -37,7 +37,7 @@ module Tribe
 
     def result
       @mutex.synchronize do
-        raise 'Result must be set first.' unless @state == :finished
+        raise Tribe::FutureError.new('Result must be set first.') unless @state == :finished
 
         return @result
       end
@@ -55,7 +55,7 @@ module Tribe
 
     def success?
       @mutex.synchronize do
-        raise 'Result must be set first.' unless @state == :finished
+        raise Tribe::FutureError.new('Result must be set first.') unless @state == :finished
 
         return !@result.is_a?(Exception)
       end
@@ -73,7 +73,7 @@ module Tribe
         when :finished
           yield(@result) unless @result.is_a?(Exception)
         else
-          raise 'Invalid state.'
+          raise Tribe::FutureError.new('Invalid state.')
         end
 
         return nil
@@ -88,7 +88,7 @@ module Tribe
         when :finished
           yield(@result) if @result.is_a?(Exception)
         else
-          raise 'Invalid state.'
+          raise Tribe::FutureError.new('Invalid state.')
         end
 
         return nil

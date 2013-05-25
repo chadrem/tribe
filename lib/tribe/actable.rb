@@ -10,6 +10,11 @@ module Tribe
     private
 
     def init_actable(options = {})
+      # Symbols aren't GCed in JRuby so force string names.
+      if options[:name] && !options[:name].is_a?(String)
+        raise Tribe::ActorNameError.new('Name must be a string.')
+      end
+
       @_logger = Workers::LogProxy.new(options[:logger])
       @_dedicated = options[:dedicated] || false
       @_mailbox = options[:mailbox] || Tribe::Mailbox.new
