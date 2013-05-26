@@ -19,3 +19,5 @@ tmp
 .DS_Store
 *.swp
 .rvmrc
+.ruby-version
+.ruby-gemset
