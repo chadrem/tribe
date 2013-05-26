@@ -2,6 +2,11 @@ module Tribe
   module Actable
     include Workers::Helpers
 
+    #
+    # Initialization method.
+    # Notes: Call this in your constructor.
+    #
+
     private
 
     def init_actable(options = {})
@@ -15,15 +20,19 @@ module Tribe
       @_as.dedicated = options[:dedicated] || false
       @_as.mailbox = options[:mailbox] || Tribe::Mailbox.new
       @_as.registry = options[:registry] || Tribe.registry
-      @_as.scheduler = options[:scheduler] || Workers.scheduler
-      @_as.timers = Tribe::SafeSet.new
+      @_as.scheduler = options[:scheduler]
       @_as.name = options[:name]
       @_as.pool = @_as.dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
       @_as.alive = true
-      @_as.futures = Tribe::SafeSet.new
 
       @_as.registry.register(self)
     end
+
+    #
+    # Thread safe public methods.
+    # Notes: These are the methods that actors use to communicate with each other.
+    #        Actors should avoid sharing mutable state in order to remain thread safe.
+    #
 
     public
 
@@ -38,15 +47,17 @@ module Tribe
     end
 
     def enqueue_future(command, data = nil)
+      @_as.futures ||= Tribe::SafeSet.new # Lazy instantiation for performance.
+
       future = Tribe::Future.new
       @_as.futures.add(future)
 
       perform do
         begin
-          result = result = process_event(Workers::Event.new(command, data))
+          result = event_handler(Workers::Event.new(command, data))
           future.result = result
-        rescue Exception => e
-          future.result = e
+        rescue Exception => exception
+          future.result = exception
           raise
         ensure
           @_as.futures.delete(future)
@@ -76,62 +87,22 @@ module Tribe
       return enqueue(:perform, block)
     end
 
+    #
+    # Private event handlers.
+    # Notes: These methods are designed to be overriden (make sure you call super).
+    #
+
     private
 
-    def registry
-      return @_as.registry
-    end
-
-    def pool
-      return @_as.pool
-    end
-
-    def process_events
-      while (event = @_as.mailbox.shift)
-        case event.command
-        when :shutdown
-          cleanup
-          shutdown_handler(event)
-        when :perform
-          perform_handler(event)
-        else
-          process_event(event)
-        end
-      end
-
-    rescue Exception => e
-      cleanup(e)
-      exception_handler(e)
-    ensure
-      @_as.mailbox.release do
-        @_as.pool.perform { process_events if @_as.alive }
-      end
-
-      return nil
-    end
-
-    def cleanup(e = nil)
-      @_as.pool.shutdown if @_as.dedicated
-      @_as.mailbox.synchronize { @_as.alive = false }
-      @_as.registry.unregister(self)
-      @_as.timers.each { |t| t.cancel }
-      @_as.futures.each { |f| f.result = e || Tribe::ActorShutdownError.new }
-
-      return nil
-    end
-
-    # Override and call super as necessary.
-    # Note that the return value is used as the result of a future.
-    def process_event(event)
+    # The return value is used as the result of a future.
+    def event_handler(event)
       return send("on_#{event.command}", event)
     end
 
-    # Override and call super as necessary.
-    def exception_handler(e)
+    def exception_handler(exception)
       return nil
     end
 
-    # Override and call super as necessary.
     def shutdown_handler(event)
       return nil
     end
@@ -142,7 +113,36 @@ module Tribe
       return nil
     end
 
+    def cleanup_handler(exception = nil)
+      @_as.pool.shutdown if @_as.dedicated
+      @_as.mailbox.synchronize { @_as.alive = false }
+      @_as.registry.unregister(self)
+      @_as.timers.each { |t| t.cancel } if @_as.timers
+      @_as.futures.each { |f| f.result = exception || Tribe::ActorShutdownError.new } if @_as.futures
+
+      return nil
+    end
+
+    #
+    # Private API methods.
+    # Notes: Use these methods internally in your actor.
+    #
+
+    private
+
+    def registry
+      return @_as.registry
+    end
+
+    def pool
+      return @_as.pool
+    end
+
     def timer(delay, command, data = nil)
+      # Lazy instantiation for performance.
+      @_as.scheduler ||= Workers.scheduler
+      @_as.timers ||= Tribe::SafeSet.new
+
       timer = Workers::Timer.new(delay, :scheduler => @_as.scheduler) do
         @_as.timers.delete(timer)
         enqueue(command, data)
@@ -154,6 +154,10 @@ module Tribe
     end
 
     def periodic_timer(delay, command, data = nil)
+      # Lazy instantiation for performance.
+      @_as.scheduler ||= Workers.scheduler
+      @_as.timers ||= Tribe::SafeSet.new
+
       timer = Workers::PeriodicTimer.new(delay, :scheduler => @_as.scheduler) do
         enqueue(command, data)
         unless alive?
@@ -165,6 +169,35 @@ module Tribe
       @_as.timers.add(timer)
 
       return timer
+    end
+
+    #
+    # Private internal methods.
+    # Notes: These are used by the actor system and you should never call them directly.
+    #
+
+    def process_events
+      while (event = @_as.mailbox.shift)
+        case event.command
+        when :shutdown
+          cleanup_handler
+          shutdown_handler(event)
+        when :perform
+          perform_handler(event)
+        else
+          event_handler(event)
+        end
+      end
+
+    rescue Exception => exception
+      cleanup_handler(exception)
+      exception_handler(exception)
+    ensure
+      @_as.mailbox.release do
+        @_as.pool.perform { process_events if @_as.alive }
+      end
+
+      return nil
     end
   end
 end
