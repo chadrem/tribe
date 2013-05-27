@@ -26,7 +26,7 @@ Or install it yourself as:
 ## Actors
 
 Actors are light-weight objects which use asynchronous message passing for communcation.
-There are two types of methods which you create in your actors:
+There are two types of methods that you create in your actors:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
 2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for exception, shutdown, and cleanup handling.  It is important that you call the super method since their default behavior is used by the actor system.
