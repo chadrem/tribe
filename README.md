@@ -88,9 +88,6 @@ Actors that block for long periods of time should use a dedicated thread (:dedic
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
 
-    The DedicatedActor class is a simple wrapper around the Actor class.
-    It takes all the same options except for :pool and :dedicated since they aren't applicable.
-
 ## Registries
 
 Registries hold references to named actors so that you can easily find them.
