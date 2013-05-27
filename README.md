@@ -73,11 +73,11 @@ The return value will always be nil since messaging is asynchronous.
       actor.enqueue(:shutdown)
     end
 
-#### Implementation:
+#### Implementation
 Because actors use a shared thread pool, it is important that they don't block for long periods of time (short periods are fine).
 Actors that block for long periods of time should use a dedicated thread (:dedicated => true or subclass from Tribe::DedicatedActor).
 
-#### Options (defaults below):
+#### Options (defaults below)
 
     actor = Tribe::Actor.new(
       :logger => nil,                   # Ruby logger instance.
@@ -136,7 +136,7 @@ Both one-shot and periodic timers are provided.
       actor.enqueue(:shutdown)
     end
 
-## Futures (experimental)
+## Futures
 
 Futures allow an actor to ask another actor to perform a computation and then return the result.
 Tribe includes both blocking and non-blocking actors.
