@@ -31,7 +31,7 @@ There are two types of methods which you create in your actors:
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
 2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for exception, shutdown, and cleanup handling.  It is important that you call the super method since their default behavior is used by the actor system.
 
-To communicate, you use Actor#enqueue to send a command (with optional data) to an actor. 
+To send a message to an actor you use the "enqueue" method and specify a command with an optional data parameter.
 The return value will always be nil since messaging is asynchronous.
 
     # Create your custom actor class.
