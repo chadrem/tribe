@@ -138,9 +138,12 @@ Both one-shot and periodic timers are provided.
 
 ## Futures
 
-Futures allow an actor to ask another actor to perform a computation and then return the result.
+As mentioned above, message passing with the "enqueue" method is asynchronous and always returns nil.
+The "enqueue_future" method is also asynchronous, but instead returns a Tribe::Future object that you can use to obtain the result.
+Since an actor can die while processing messages, you will receive the exception instead of one is raised.
+
 Tribe includes both blocking and non-blocking actors.
-You should prefer to use non-blocking actors in your code when possible due to performance reasons (see details below).
+You should prefer to use non-blocking actors in your code when possible due to performance (see details below).
 
 #### Non-blocking
 
@@ -255,8 +258,10 @@ The actor won't process any other events until the future has a result.
 
 #### Futures and Performance
 
-You should prefer non-blocking futures as much as possible in your application code.
-This is because a blocking future (Future#wait) causes the current actor (and thread) to sleep.
+Futures have overhead associated with them and so you should choose to use "enqueue" unless you are actaully interested in the result of a message.
+
+You should also prefer non-blocking futures over blocking ones.
+This is because a blocking future causes the current actor (and thread) to sleep.
 
 Tribe is designed specifically to support a large number of actors running on a small number of threads.
 Thus, you will run into performance and/or deadlock problems if too many actors are waiting at the same time.
@@ -269,6 +274,8 @@ The downside to using dedicated actors is that they consume more resources and y
 
 - Supervisors.
 - Linking.
+- Future timeouts.
+- Clustering.
 
 ## Contributing
 
