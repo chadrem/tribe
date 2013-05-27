@@ -258,7 +258,8 @@ The actor won't process any other events until the future has a result.
 
 #### Futures and Performance
 
-Futures have overhead associated with them and so you should choose to use "enqueue" unless you are actaully interested in the result of a message.
+Futures have overhead associated with them.
+You should avoid them unless you are actaully interested in the result of a message.
 
 You should also prefer non-blocking futures over blocking ones.
 This is because a blocking future causes the current actor (and thread) to sleep.
