@@ -29,8 +29,10 @@ Actors are light-weight objects which use asynchronous message passing for commu
 There are two types of methods which you create in your actors:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
-2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for such things as handling an exception or shutting down an actor.  It is important that you call the super method since these methods are used by the actor system.
+2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for exception, shutdown, and cleanup handling.  It is important that you call the super method since their default behavior is used by the actor system.
 
+To communicate, you use Actor#enqueue to send a command (with optional data) to an actor. 
+The return value will always be nil since messaging is asynchronous.
 
     # Create your custom actor class.
     class MyActor < Tribe::Actor
