@@ -139,15 +139,19 @@ Both one-shot and periodic timers are provided.
 ## Futures
 
 As mentioned above, message passing with the "enqueue" method is asynchronous and always returns nil.
-The "enqueue_future" method is also asynchronous, but instead returns a Tribe::Future object that you can use to obtain the result.
-Since an actor can die while processing messages, you will receive the exception instead of one is raised.
+This can be a pain since in many cases you will be interested in the result.
 
-Tribe includes both blocking and non-blocking actors.
-You should prefer to use non-blocking actors in your code when possible due to performance (see details below).
+The "enqueue_future" method helps solve this problem by returning a a Tribe::Future object instead of nil.
+You can then use this object to obtain the result when it becomes available sometime in the future.
+
+Tribe includes both blocking and non-blocking futures.
+You should prefer to use non-blocking futures for performance reasons (see details below).
+
+In situations where an actor dies, your future will receive the raised exception as the result.
 
 #### Non-blocking
 
-Non-blocking actors are asynchronous and use callbacks.
+Non-blocking futures are asynchronous and use callbacks.
 No waiting for a result is involved.
 The actor will continue to process other events.
 
@@ -203,11 +207,11 @@ The actor will continue to process other events.
 
 *Important*: You must use Actor#perform inside the above callbacks.
 This ensures that your code executes within the context of the correct actor.
-Failure to do so will result in race conditions and other nasty things.
+Failure to do so will result in many nasty things.
 
 #### Blocking
 
-Blocking actors are synchronous.
+Blocking futures are synchronous.
 The actor won't process any other events until the future has a result.
 
     class ActorA < Tribe::Actor
@@ -259,7 +263,7 @@ The actor won't process any other events until the future has a result.
 #### Futures and Performance
 
 Futures have overhead associated with them.
-You should avoid them unless you are actaully interested in the result of a message.
+You should avoid them unless you are actaully interested in the result.
 
 You should also prefer non-blocking futures over blocking ones.
 This is because a blocking future causes the current actor (and thread) to sleep.
