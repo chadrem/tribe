@@ -61,7 +61,7 @@ The return value will always be nil since messaging is asynchronous.
       MyActor.new(:name => "my_actor_#{i}")
     end
 
-    # Send an event to each actors.  Find each actor using the global registry.
+    # Send an event to each actor.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
       actor.enqueue(:my_custom, 'hello world')
