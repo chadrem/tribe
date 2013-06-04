@@ -15,5 +15,5 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Tribe::VERSION
 
-  gem.add_dependency('workers', '0.1.4')
+  gem.add_dependency('workers', '0.2.2')
 end
