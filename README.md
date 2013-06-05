@@ -140,14 +140,9 @@ Both one-shot and periodic timers are provided.
 
 As mentioned above, message passing with the "enqueue" method is asynchronous and always returns nil.
 This can be a pain since in many cases you will be interested in the result.
-
 The "enqueue_future" method helps solve this problem by returning a Tribe::Future object instead of nil.
 You can then use this object to obtain the result when it becomes available.
-
-Tribe includes both blocking and non-blocking futures.
-You should prefer to use non-blocking futures for performance reasons (see details below).
-
-If an actor dies, your future will receive the raised exception as the result.
+Tribe includes two types of futures (blocking and non-blocking), which are 
 
 #### Non-blocking
 
@@ -260,20 +255,14 @@ The actor won't process any other events until the future has a result.
     actor_a.enqueue(:shutdown)
     actor_b.enqueue(:shutdown)
 
-#### Futures and Performance
-
-Futures have overhead associated with them.
-You should avoid them unless you are actaully interested in the result.
-
-You should also prefer non-blocking futures over blocking ones.
-This is because a blocking future causes the current actor (and thread) to sleep.
+#### Performance Summary
 
 Tribe is designed specifically to support a large number of actors running on a small number of threads.
-Thus, you will run into performance and/or deadlock problems if too many actors are waiting at the same time.
+Below you will find a summary of performance recommendations regarding the use of futures:
 
-If you choose to use blocking futures then it is highly recommended that you only use them with dedicated actors.
-Each dedicated actor runs in a separate thread (instead of a shared thread pool).
-The downside to using dedicated actors is that they consume more resources and you can't have as many of them.
+- Use #enqueue unless you really need #enqueue_future since futures have overhead.
+- If you use #enqueue_future, prefer the non-blocking API over the blocking one.
+- If you use the blocking API, the actor calling #wait should use a dedicated worker thread.
 
 ## TODO - missing features
 
