@@ -141,13 +141,13 @@ Both one-shot and periodic timers are provided.
 As mentioned above, message passing with the "enqueue" method is asynchronous and always returns nil.
 This can be a pain since in many cases you will be interested in the result.
 
-The "enqueue_future" method helps solve this problem by returning a a Tribe::Future object instead of nil.
-You can then use this object to obtain the result when it becomes available sometime in the future.
+The "enqueue_future" method helps solve this problem by returning a Tribe::Future object instead of nil.
+You can then use this object to obtain the result when it becomes available.
 
 Tribe includes both blocking and non-blocking futures.
 You should prefer to use non-blocking futures for performance reasons (see details below).
 
-In situations where an actor dies, your future will receive the raised exception as the result.
+If an actor dies, your future will receive the raised exception as the result.
 
 #### Non-blocking
 
