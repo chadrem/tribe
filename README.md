@@ -29,7 +29,7 @@ Actors are light-weight objects that use asynchronous message passing for commun
 There are two types of methods that you create in your actors:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
-2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for exception, shutdown, and cleanup handling.  It is important that you call the super method since their default behavior is used by the actor system.
+2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for exception, shutdown, and cleanup handling.
 
 To send a message you use the Actable#message! method and specify a command with an optional data parameter.
 The return value will always be nil since messaging is asynchronous.
@@ -41,21 +41,15 @@ More information on them will be provided throughout this readme.
     # Create your custom actor class.
     class MyActor < Tribe::Actor
       private
-      def initialize(options = {})
-        super
-      end
-
       def on_my_custom(event)
         puts "Received a custom event (#{event.inspect})."
       end
 
       def exception_handler(e)
-        super
         puts concat_e("MyActor (#{identifier}) died.", e)
       end
 
       def shutdown_handler(event)
-        super
         puts "MyActor (#{identifier}) is shutting down.  Put cleanup code here."
       end
     end
@@ -112,7 +106,6 @@ Both one-shot and periodic timers are provided.
       private
       def initialize(options = {})
         super
-
         timer(1, :timer, Time.now)
         periodic_timer(1, :periodic_timer, Time.now)
       end
@@ -155,7 +148,6 @@ No waiting for a result is involved and the actor will continue to process other
     class ActorA < Tribe::Actor
     private
       def exception_handler(e)
-        super
         puts concat_e("ActorA (#{identifier}) died.", e)
       end
 
@@ -180,7 +172,6 @@ No waiting for a result is involved and the actor will continue to process other
 
     class ActorB < Tribe::Actor
       def exception_handler(e)
-        super
         puts concat_e("ActorB (#{identifier}) died.", e)
       end
 
@@ -214,7 +205,6 @@ The actor won't process any other events until the future has a result.
     class ActorA < Tribe::Actor
     private
       def exception_handler(e)
-        super
         puts concat_e("ActorA (#{identifier}) died.", e)
       end
 
@@ -235,7 +225,6 @@ The actor won't process any other events until the future has a result.
 
     class ActorB < Tribe::Actor
       def exception_handler(e)
-        super
         puts concat_e("ActorB (#{identifier}) died.", e)
       end
 
@@ -283,12 +272,10 @@ This lets you build routers that delegate work to other actors.
       end
 
       def exception_handler(e)
-        super
         puts concat_e("MyRouter (#{identifier}) died.", e)
       end
 
       def shutdown_handler(event)
-        super
         puts "MyRouter (#{identifier}) is shutting down.  Put cleanup code here."
         @processors.each { |p| p.shutdown! }
       end
@@ -297,21 +284,15 @@ This lets you build routers that delegate work to other actors.
     # Create your processor class.
     class MyProcessor < Tribe::Actor
       private
-      def initialize(options = {})
-        super
-      end
-
       def on_process(event)
         puts "MyProcessor (#{identifier}) received a process event (#{event.inspect})."
       end
 
       def exception_handler(e)
-        super
         puts concat_e("MyProcessor (#{identifier}) died.", e)
       end
 
       def shutdown_handler(event)
-        super
         puts "MyProcessor (#{identifier}) is shutting down.  Put cleanup code here."
       end
     end
