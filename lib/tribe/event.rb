@@ -1,14 +1,15 @@
 module Tribe
-  class Event < Workers::Event
+  class Event
+
+    attr_accessor :command
+    attr_accessor :data
     attr_accessor :source
     attr_accessor :future
-    attr_accessor :forwarded
 
-    def initialize(command, data, source = nil, future = nil)
-      super(command, data)
-
+    def initialize(command, data, source = nil)
+      @command = command
+      @data = data
       @source = source
-      @future = future
     end
   end
 end

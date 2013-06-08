@@ -38,16 +38,12 @@ module Tribe
     public
 
     def event!(event)
-      return nil unless alive?
-
       push_event(event)
 
       return nil
     end
 
     def message!(command, data = nil, source = nil)
-      return nil unless alive?
-
       event = Tribe::Event.new(command, data, source)
 
       push_event(event)
@@ -57,9 +53,8 @@ module Tribe
 
     def future!(command, data = nil, source = nil)
       event = Tribe::Event.new(command, data, source)
-      future = Tribe::Future.new
+      event.future = future = Tribe::Future.new
 
-      event.future = future
       push_event(event)
 
       return future
@@ -94,7 +89,7 @@ module Tribe
 
     def event_handler(event)
       result = nil
-      @_as.event = event
+      @_as.active_event = event
 
       begin
         result = send("on_#{event.command}", event)
@@ -102,7 +97,7 @@ module Tribe
         result = e
       end
 
-      if @_as.event && event.future
+      if event.future && @_as.active_event
         event.future.result = result
       end
 
@@ -186,15 +181,15 @@ module Tribe
     #
 
     def forward!(dest)
-      return nil unless dest.alive?
-
-      dest.event!(@_as.event)
-      @_as.event = nil
+      dest.event!(@_as.active_event)
+      @_as.active_event = nil
 
       return nil
     end
 
     def push_event(event)
+      return unless alive?
+
       @_as.mailbox.push(event) do
         @_as.pool.perform { process_events }
       end
