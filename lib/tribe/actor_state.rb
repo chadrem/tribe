@@ -8,6 +8,6 @@ module Tribe
     attr_accessor :name
     attr_accessor :pool
     attr_accessor :alive
-    attr_accessor :futures
+    attr_accessor :event
   end
 end

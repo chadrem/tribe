@@ -268,7 +268,7 @@ This lets you build routers that delegate work to other actors.
       end
 
       def on_process(event)
-        @processors[rand(100)].forward!(event)
+        forward!(@processors[rand(100)])
       end
 
       def exception_handler(e)

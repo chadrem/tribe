@@ -37,37 +37,30 @@ module Tribe
 
     public
 
-    def message!(command, data = nil)
-      return forward!(Workers::Event.new(command, data))
-    end
-
-    def forward!(event)
+    def event!(event)
       return nil unless alive?
 
-      @_as.mailbox.push(event) do
-        @_as.pool.perform { process_events }
-      end
+      push_event(event)
 
       return nil
     end
 
-    def future!(command, data = nil)
-      @_as.futures ||= Tribe::SafeSet.new # Lazy instantiation for performance.
+    def message!(command, data = nil, source = nil)
+      return nil unless alive?
 
+      event = Tribe::Event.new(command, data, source)
+
+      push_event(event)
+
+      return nil
+    end
+
+    def future!(command, data = nil, source = nil)
+      event = Tribe::Event.new(command, data, source)
       future = Tribe::Future.new
-      @_as.futures.add(future)
 
-      perform! do
-        begin
-          result = event_handler(Workers::Event.new(command, data))
-          future.result = result
-        rescue Exception => exception
-          future.result = exception
-          raise
-        ensure
-          @_as.futures.delete(future)
-        end
-      end
+      event.future = future
+      push_event(event)
 
       return future
     end
@@ -99,9 +92,21 @@ module Tribe
 
     private
 
-    # The return value is used as the result of a future.
     def event_handler(event)
-      return send("on_#{event.command}", event)
+      result = nil
+      @_as.event = event
+
+      begin
+        result = send("on_#{event.command}", event)
+      rescue Exception => e
+        result = e
+      end
+
+      if @_as.event && event.future
+        event.future.result = result
+      end
+
+      return nil
     end
 
     def exception_handler(exception)
@@ -123,7 +128,6 @@ module Tribe
       @_as.mailbox.synchronize { @_as.alive = false }
       @_as.registry.unregister(self)
       @_as.timers.each { |t| t.cancel } if @_as.timers
-      @_as.futures.each { |f| f.result = exception || Tribe::ActorShutdownError.new } if @_as.futures
 
       return nil
     end
@@ -180,6 +184,21 @@ module Tribe
     # Private internal methods.
     # Notes: These are used by the actor system and you should never call them directly.
     #
+
+    def forward!(dest)
+      return nil unless dest.alive?
+
+      dest.event!(@_as.event)
+      @_as.event = nil
+
+      return nil
+    end
+
+    def push_event(event)
+      @_as.mailbox.push(event) do
+        @_as.pool.perform { process_events }
+      end
+    end
 
     def process_events
       while (event = @_as.mailbox.shift)

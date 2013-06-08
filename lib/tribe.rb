@@ -4,6 +4,7 @@ require 'workers'
 
 require 'tribe/safe_set'
 require 'tribe/exceptions'
+require 'tribe/event'
 require 'tribe/mailbox'
 require 'tribe/actor_state'
 require 'tribe/actable'
