@@ -32,27 +32,32 @@ module Tribe
     # Thread safe public methods.
     # Notes: These are the methods that actors use to communicate with each other.
     #        Actors should avoid sharing mutable state in order to remain thread safe.
+    #        Methods with a ! are designed for asynchronous communication.
     #
 
     public
 
-    def enqueue(command, data = nil)
-      return false unless alive?
+    def message!(command, data = nil)
+      return forward!(Workers::Event.new(command, data))
+    end
 
-      @_as.mailbox.push(Workers::Event.new(command, data)) do
+    def forward!(event)
+      return nil unless alive?
+
+      @_as.mailbox.push(event) do
         @_as.pool.perform { process_events }
       end
 
-      return true
+      return nil
     end
 
-    def enqueue_future(command, data = nil)
+    def future!(command, data = nil)
       @_as.futures ||= Tribe::SafeSet.new # Lazy instantiation for performance.
 
       future = Tribe::Future.new
       @_as.futures.add(future)
 
-      perform do
+      perform! do
         begin
           result = event_handler(Workers::Event.new(command, data))
           future.result = result
@@ -67,6 +72,14 @@ module Tribe
       return future
     end
 
+    def shutdown!
+      return message!(:shutdown)
+    end
+
+    def perform!(&block)
+      return message!(:perform, block)
+    end
+
     def alive?
       @_as.mailbox.synchronize { return @_as.alive }
     end
@@ -77,14 +90,6 @@ module Tribe
 
     def identifier
       return @_as.name ? "#{object_id}:#{@_as.name}" : object_id
-    end
-
-    def shutdown
-      return enqueue(:shutdown)
-    end
-
-    def perform(&block)
-      return enqueue(:perform, block)
     end
 
     #
@@ -145,7 +150,7 @@ module Tribe
 
       timer = Workers::Timer.new(delay, :scheduler => @_as.scheduler) do
         @_as.timers.delete(timer)
-        enqueue(command, data)
+        message!(command, data)
       end
 
       @_as.timers.add(timer)
@@ -159,7 +164,7 @@ module Tribe
       @_as.timers ||= Tribe::SafeSet.new
 
       timer = Workers::PeriodicTimer.new(delay, :scheduler => @_as.scheduler) do
-        enqueue(command, data)
+        message!(command, data)
         unless alive?
           @_as.timers.delete(timer)
           timer.cancel

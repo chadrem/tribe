@@ -25,13 +25,13 @@ Or install it yourself as:
 
 ## Actors
 
-Actors are light-weight objects which use asynchronous message passing for communcation.
+Actors are light-weight objects that use asynchronous message passing for communcation.
 There are two types of methods that you create in your actors:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
 2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for exception, shutdown, and cleanup handling.  It is important that you call the super method since their default behavior is used by the actor system.
 
-To send a message you use the "enqueue" method and specify a command with an optional data parameter.
+To send a message you use the Actable#message! method and specify a command with an optional data parameter.
 The return value will always be nil since messaging is asynchronous.
 
     # Create your custom actor class.
@@ -42,7 +42,7 @@ The return value will always be nil since messaging is asynchronous.
       end
 
       def on_my_custom(event)
-        puts "Received a custom event (#{event.inspect})"
+        puts "Received a custom event (#{event.inspect})."
       end
 
       def exception_handler(e)
@@ -64,13 +64,13 @@ The return value will always be nil since messaging is asynchronous.
     # Send an event to each actor.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
-      actor.enqueue(:my_custom, 'hello world')
+      actor.message!(:my_custom, 'hello world')
     end
 
     # Shutdown the actors.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
-      actor.enqueue(:shutdown)
+      actor.shutdown!
     end
 
 #### Implementation
@@ -133,22 +133,20 @@ Both one-shot and periodic timers are provided.
     # Shutdown the actors.
     10.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
-      actor.enqueue(:shutdown)
+      actor.shutdown!
     end
 
 ## Futures
 
-As mentioned above, message passing with the "enqueue" method is asynchronous and always returns nil.
+As mentioned above, message passing with the Actable#message! method is asynchronous and always returns nil.
 This can be a pain since in many cases you will be interested in the result.
-The "enqueue_future" method helps solve this problem by returning a Tribe::Future object instead of nil.
+The Actable#future! method solves this problem by returning a Tribe::Future object instead of nil.
 You can then use this object to obtain the result when it becomes available.
-Tribe includes two types of futures (blocking and non-blocking), which are 
 
 #### Non-blocking
 
 Non-blocking futures are asynchronous and use callbacks.
-No waiting for a result is involved.
-The actor will continue to process other events.
+No waiting for a result is involved and the actor will continue to process other events.
 
     class ActorA < Tribe::Actor
     private
@@ -160,16 +158,16 @@ The actor will continue to process other events.
       def on_start(event)
         friend = registry['actor_b']
 
-        future = friend.enqueue_future(:compute, 10)
+        future = friend.future!(:compute, 10)
 
         future.success do |result|
-          perform do
+          perform! do
             puts "ActorA (#{identifier}) future result: #{result}"
           end
         end
 
         future.failure do |exception|
-          perform do
+          perform! do
             puts "ActorA (#{identifier}) future failure: #{exception}"
           end
         end
@@ -195,14 +193,14 @@ The actor will continue to process other events.
     actor_a = ActorA.new(:name => 'actor_a')
     actor_b = ActorB.new(:name => 'actor_b')
 
-    actor_a.enqueue(:start)
+    actor_a.message!(:start)
 
-    actor_a.enqueue(:shutdown)
-    actor_b.enqueue(:shutdown)
+    actor_a.shutdown!
+    actor_b.shutdown!
 
-*Important*: You must use Actor#perform inside the above callbacks.
+*Important*: You must use Actable#perform! inside the above callbacks.
 This ensures that your code executes within the context of the correct actor.
-Failure to do so will result in many nasty things.
+Failure to do so will result in unexpected behavior (thread safety will be lost)!
 
 #### Blocking
 
@@ -219,7 +217,7 @@ The actor won't process any other events until the future has a result.
       def on_start(event)
         friend = registry['actor_b']
 
-        future = friend.enqueue_future(:compute, 10)
+        future = friend.future!(:compute, 10)
 
         future.wait # The current thread will sleep until a result is available.
 
@@ -250,26 +248,87 @@ The actor won't process any other events until the future has a result.
     actor_a = ActorA.new(:name => 'actor_a')
     actor_b = ActorB.new(:name => 'actor_b')
 
-    actor_a.enqueue(:start)
+    actor_a.message!(:start)
 
-    actor_a.enqueue(:shutdown)
-    actor_b.enqueue(:shutdown)
+    actor_a.shutdown!
+    actor_b.shutdown!
 
 #### Performance Summary
 
-Tribe is designed specifically to support a large number of actors running on a small number of threads.
 Below you will find a summary of performance recommendations regarding the use of futures:
 
-- Use #enqueue unless you really need #enqueue_future since futures have overhead.
-- If you use #enqueue_future, prefer the non-blocking API over the blocking one.
-- If you use the blocking API, the actor calling #wait should use a dedicated worker thread.
+- Use Actable#message! unless you really need Actable#future! since futures have overhead.
+- If you use Actable#future!, prefer the non-blocking API over the blocking one.
+- If you use the blocking API, the actor calling Future#wait should use a dedicated worker thread.
+
+## Forwarding
+
+Messages and futures can be forwarded to other actors.
+This lets you build actors that act as routers that delegate work to other actors.
+
+    # Create your router class.
+    class MyRouter < Tribe::Actor
+      private
+      def initialize(options = {})
+        super
+        @processors = 100.times.map { MyProcessor.new }
+      end
+
+      def on_process(event)
+        @processors[rand(100)].forward!(event)
+      end
+
+      def exception_handler(e)
+        super
+        puts concat_e("MyRouter (#{identifier}) died.", e)
+      end
+
+      def shutdown_handler(event)
+        super
+        puts "MyRouter (#{identifier}) is shutting down.  Put cleanup code here."
+        @processors.each { |p| p.shutdown! }
+      end
+    end
+
+    # Create your processor class.
+    class MyProcessor < Tribe::Actor
+      private
+      def initialize(options = {})
+        super
+      end
+
+      def on_process(event)
+        puts "MyProcessor (#{identifier}) received a process event (#{event.inspect})."
+      end
+
+      def exception_handler(e)
+        super
+        puts concat_e("MyProcessor (#{identifier}) died.", e)
+      end
+
+      def shutdown_handler(event)
+        super
+        puts "MyProcessor (#{identifier}) is shutting down.  Put cleanup code here."
+      end
+    end
+
+    # Create the router.
+    router = MyRouter.new(:name => 'router')
+
+    # Send an event to the router and it will forward it to a random processor.
+    100.times do |i|
+      router.message!(:process, i)
+    end
+
+    # Shutdown the router.
+    router.shutdown!
 
 ## TODO - missing features
 
 - Supervisors.
 - Linking.
 - Future timeouts.
-- Clustering.
+- Remote actors (Tribe clustering).
 
 ## Contributing
 
