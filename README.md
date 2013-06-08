@@ -34,6 +34,10 @@ There are two types of methods that you create in your actors:
 To send a message you use the Actable#message! method and specify a command with an optional data parameter.
 The return value will always be nil since messaging is asynchronous.
 
+Note that the actors have a number of methods that end in ! (exclamation point or “bang”).
+All of these mthods are asynchronous and designed to be thread safe.
+More information on them will be provided throughout this readme.
+
     # Create your custom actor class.
     class MyActor < Tribe::Actor
       private
