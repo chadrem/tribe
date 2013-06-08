@@ -264,7 +264,7 @@ Below you will find a summary of performance recommendations regarding the use o
 ## Forwarding
 
 Messages and futures can be forwarded to other actors.
-This lets you build actors that act as routers that delegate work to other actors.
+This lets you build actors that delegate work to other actors.
 
     # Create your router class.
     class MyRouter < Tribe::Actor
