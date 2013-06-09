@@ -259,7 +259,7 @@ When a timeout occurs, the result of the future will be a Tribe::FutureTimeout e
     # Wait for the timeout.
     sleep(3)
 
-    # The result of the future is a timeout exception:
+    # The result of the future is a timeout exception.
     puts "Result: #{future.result}"
 
 #### Performance Summary
