@@ -307,6 +307,10 @@ This lets you build routers that delegate work to other actors.
     # Shutdown the router.
     router.shutdown!
 
+## Benchmarks
+
+  Please see the [performance] (http://en.wikipedia.org/wiki/Actor_model "performance") wiki page for more information.
+
 ## TODO - missing features
 
 - Supervisors.
