@@ -37,18 +37,6 @@ module Tribe
 
     public
 
-    def _parent
-      return @_as.parent
-    end
-
-    def _children
-      return @_as.children
-    end
-
-    def _exception
-      return @_as.exception
-    end
-
     def event!(event)
       push_event(event)
 
@@ -90,12 +78,6 @@ module Tribe
 
     def identifier
       return @_as.name ? "#{object_id}:#{@_as.name}" : object_id
-    end
-
-    def link(child)
-    end
-
-    def unlink(child)
     end
 
     #
