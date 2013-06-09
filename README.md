@@ -124,7 +124,7 @@ Both one-shot and periodic timers are provided.
     end
 
     # Sleep in order to observe the timers.
-    sleep 10
+    sleep(10)
 
     # Shutdown the actors.
     10.times do |i|
