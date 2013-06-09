@@ -45,7 +45,7 @@ module Tribe
 
     def result
       @mutex.synchronize do
-        raise Tribe::FutureError.new('Result must be set first.') unless @state == :finished
+        raise Tribe::FutureNoResult.new('Result must be set first.') unless @state == :finished
 
         return @result
       end
@@ -63,7 +63,7 @@ module Tribe
 
     def success?
       @mutex.synchronize do
-        raise Tribe::FutureError.new('Result must be set first.') unless @state == :finished
+        raise Tribe::FutureNoResult.new('Result must be set first.') unless @state == :finished
 
         return !@result.is_a?(Exception)
       end

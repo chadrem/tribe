@@ -3,7 +3,8 @@ module Tribe
   class ActorNameError < RuntimeError; end
 
   class FutureError < RuntimeError; end
-  class FutureTimeout< RuntimeError; end
+  class FutureNoResult < RuntimeError; end
+  class FutureTimeout < RuntimeError; end
 
   class RegistryError < RuntimeError; end
 end
