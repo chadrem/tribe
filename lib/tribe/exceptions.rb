@@ -1,11 +1,14 @@
 module Tribe
-  class TribeError < RuntimeError
-    attr_accessor :data
-  end
+  class TribeError < RuntimeError; end
 
   class ActorShutdownError < TribeError; end
   class ActorNameError < TribeError; end
-  class ActorChildDied < TribeError; end
+  class ActorChildDied < TribeError
+    attr_accessor :exception
+    attr_accessor :child
+  end
+  class ActorUnandledChild < TribeError
+  end
 
   class FutureError < TribeError; end
   class FutureNoResult < TribeError; end

@@ -61,11 +61,11 @@ module Tribe
     end
 
     def shutdown!
-      return message!(:shutdown)
+      return message!(:_shutdown)
     end
 
     def perform!(&block)
-      return message!(:perform, block)
+      return message!(:_perform, block)
     end
 
     def alive?
@@ -108,11 +108,7 @@ module Tribe
 
     def exception_handler(exception)
       if @_as.parent
-        @_as.parent.perform! do
-          e = Tribe::ActorChildDied.new
-          e.data = exception
-          raise e
-        end
+        @_as.parent.message!(:_child_died, [self, exception])
       end
 
       return nil
@@ -141,6 +137,10 @@ module Tribe
       end
 
       return nil
+    end
+
+    def child_died_handler(child, exception)
+      raise ActorUnandledChild.new("#{child.identifier} died.")
     end
 
     #
@@ -218,14 +218,17 @@ module Tribe
       end
     end
 
+    # All system commands are prefixed with an underscore.
     def process_events
       while (event = @_as.mailbox.obtain_and_shift)
         case event.command
-        when :shutdown
+        when :_shutdown
           cleanup_handler
           shutdown_handler(event)
-        when :perform
+        when :_perform
           perform_handler(event)
+        when :_child_died
+          child_died_handler(event.data[0], event.data[1])
         else
           event_handler(event)
         end
