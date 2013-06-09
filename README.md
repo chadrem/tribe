@@ -247,7 +247,7 @@ The actor won't process any other events until the future has a result.
 
 #### Timeouts
 
-Futures can be set to timeout if a result isn't set within a specified number of seconds.
+Futures can be confgured to timeout after a specified number of seconds.
 When a timeout occurs, the result of the future will be a Tribe::FutureTimeout exception.
 
     # Manually create a future (Use Actable#future! in your actors).
