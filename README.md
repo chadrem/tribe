@@ -245,6 +245,23 @@ The actor won't process any other events until the future has a result.
     actor_a.shutdown!
     actor_b.shutdown!
 
+#### Timeouts
+
+Futures can be set to timeout if a result isn't set within a specified number of seconds.
+When a timeout occurs, the result of the future will be a Tribe::FutureTimeout exception.
+
+    # Manually create a future (Use Actable#future! in your actors).
+    future = Tribe::Future.new
+
+    # Set a timeout (in seconds).
+    future.timeout = 2
+
+    # Wait for the timeout.
+    sleep(3)
+
+    # The result of the future is a timeout exception:
+    puts "Result: #{future.result}"
+
 #### Performance Summary
 
 Below you will find a summary of performance recommendations regarding the use of futures:
@@ -315,7 +332,6 @@ This lets you build routers that delegate work to other actors.
 
 - Supervisors.
 - Linking.
-- Future timeouts.
 - Remote actors (Tribe clustering).
 
 ## Contributing

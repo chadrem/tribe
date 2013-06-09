@@ -17,9 +17,17 @@ module Tribe
       end
     end
 
+    def timeout?
+      @mutex.synchronnize do
+        return @state == :finished && @result.is_a?(Tribe::FutureTimeout)
+      end
+    end
+
     def result=(val)
       @mutex.synchronize do
-        raise Tribe::FutureError.new('Result must only be set once.') unless @state == :initialized
+        return unless @state == :initialized
+
+        @timer.cancel if @timer
 
         @result = val
         @state = :finished
@@ -92,6 +100,25 @@ module Tribe
         end
 
         return nil
+      end
+    end
+
+    def timeout
+      @mutex.synchronize do
+      end
+    end
+
+    def timeout=(val)
+      raise Tribe::FutureError.new('Timeout may only be set once.') if @timeout
+
+      @timeout = val
+
+      @timer = Workers::Timer.new(val) do
+        begin
+          raise Tribe::FutureTimeout.new("Timeout after #{@timeout} seconds.")
+        rescue Tribe::FutureTimeout => e
+          self.result = e
+        end
       end
     end
   end
