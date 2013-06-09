@@ -18,12 +18,11 @@ module Tribe
       @logger = Workers::LogProxy.new(options[:logger])
       @_as = Tribe::ActorState.new
       @_as.dedicated = options[:dedicated] || false
-      @_as.mailbox = options[:mailbox] || Tribe::Mailbox.new
+      @_as.pool = @_as.dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
+      @_as.mailbox = Tribe::Mailbox.new(@_as.pool)
       @_as.registry = options[:registry] || Tribe.registry
       @_as.scheduler = options[:scheduler]
       @_as.name = options[:name]
-      @_as.pool = @_as.dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
-      @_as.alive = true
 
       @_as.registry.register(self)
     end
@@ -69,7 +68,7 @@ module Tribe
     end
 
     def alive?
-      @_as.mailbox.synchronize { return @_as.alive }
+      @_as.mailbox.alive?
     end
 
     def name
@@ -95,10 +94,12 @@ module Tribe
         result = send("on_#{event.command}", event)
       rescue Exception => e
         result = e
-      end
-
-      if event.future && @_as.active_event
-        event.future.result = result
+        raise
+      ensure
+        if event.future && @_as.active_event
+          event.future.result = result
+        end
+        @_as.active_event = nil
       end
 
       return nil
@@ -120,7 +121,7 @@ module Tribe
 
     def cleanup_handler(exception = nil)
       @_as.pool.shutdown if @_as.dedicated
-      @_as.mailbox.synchronize { @_as.alive = false }
+      @_as.mailbox.kill
       @_as.registry.unregister(self)
       @_as.timers.each { |t| t.cancel } if @_as.timers
 
@@ -188,15 +189,13 @@ module Tribe
     end
 
     def push_event(event)
-      return unless alive?
-
       @_as.mailbox.push(event) do
-        @_as.pool.perform { process_events }
+        process_events
       end
     end
 
     def process_events
-      while (event = @_as.mailbox.shift)
+      while (event = @_as.mailbox.obtain_and_shift)
         case event.command
         when :shutdown
           cleanup_handler
@@ -213,7 +212,7 @@ module Tribe
       exception_handler(exception)
     ensure
       @_as.mailbox.release do
-        @_as.pool.perform { process_events if @_as.alive }
+        process_events
       end
 
       return nil

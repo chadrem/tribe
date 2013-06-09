@@ -7,7 +7,6 @@ module Tribe
     attr_accessor :timers
     attr_accessor :name
     attr_accessor :pool
-    attr_accessor :alive
     attr_accessor :active_event
   end
 end

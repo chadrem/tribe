@@ -1,44 +1,64 @@
 module Tribe
   class Mailbox
-    def initialize(options = {})
+    def initialize(pool)
+      @pool = pool
       @messages = []
+      @alive = true
       @mutex = Mutex.new
     end
 
     def push(event, &block)
       @mutex.synchronize do
+        return nil unless @alive
+
         @messages.push(event)
-        block.call unless @current_thread
+        @pool.perform { block.call } unless @owner_thread
       end
 
       return nil
     end
 
-    def shift
+    def obtain_and_shift
       @mutex.synchronize do
-        return nil if @current_thread && @current_thread != Thread.current
+        return nil unless @alive
 
-        @current_thread = Thread.current unless @current_thread
-
-        return @messages.shift
+        if @owner_thread
+          if @owner_thread == Thread.current
+            return @messages.shift
+          else
+            return nil
+          end
+        else
+          @owner_thread = Thread.current
+          return @messages.shift
+        end
       end
     end
 
     def release(&block)
       @mutex.synchronize do
-        @current_thread = nil
-        block.call if block && @messages.length > 0
+        return nil unless @owner_thread == Thread.current
+
+        @owner_thread = nil
+        @pool.perform { block.call } if @alive && @messages.length > 0
       end
 
       return nil
     end
 
-    def synchronize(&block)
+    def kill
       @mutex.synchronize do
-        block.call
+        @alive = false
+        @messages.clear
       end
 
       return nil
+    end
+
+    def alive?
+      @mutex.synchronize do
+        return @alive
+      end
     end
   end
 end

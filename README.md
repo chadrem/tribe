@@ -81,7 +81,6 @@ Actors that block for long periods of time should use a dedicated thread (:dedic
       :logger => nil,                   # Ruby logger instance.
       :dedicated => false,              # If true, the actor runs with a worker pool that has one thread.
       :pool => Workers.pool,            # The workers pool used to execute events.
-      :mailbox => Tribe::Mailbox.new,   # The mailbox used to receive events.
       :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
       :name => nil                      # The name of the actor (must be unique in the registry).
     )
