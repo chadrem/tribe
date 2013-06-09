@@ -23,6 +23,7 @@ module Tribe
       @_as.registry = options[:registry] || Tribe.registry
       @_as.scheduler = options[:scheduler]
       @_as.name = options[:name]
+      @_as.parent = options[:parent]
 
       @_as.registry.register(self)
     end
@@ -35,6 +36,18 @@ module Tribe
     #
 
     public
+
+    def _parent
+      return @_as.parent
+    end
+
+    def _children
+      return @_as.children
+    end
+
+    def _exception
+      return @_as.exception
+    end
 
     def event!(event)
       push_event(event)
@@ -79,6 +92,12 @@ module Tribe
       return @_as.name ? "#{object_id}:#{@_as.name}" : object_id
     end
 
+    def link(child)
+    end
+
+    def unlink(child)
+    end
+
     #
     # Private event handlers.
     # Notes: These methods are designed to be overriden (make sure you call super).
@@ -106,6 +125,14 @@ module Tribe
     end
 
     def exception_handler(exception)
+      if @_as.parent
+        @_as.parent.perform! do
+          e = Tribe::ActorChildDied.new
+          e.data = exception
+          raise e
+        end
+      end
+
       return nil
     end
 
@@ -120,10 +147,16 @@ module Tribe
     end
 
     def cleanup_handler(exception = nil)
+      @_as.exception = exception
       @_as.pool.shutdown if @_as.dedicated
       @_as.mailbox.kill
       @_as.registry.unregister(self)
       @_as.timers.each { |t| t.cancel } if @_as.timers
+
+      if @_as.children
+        @_as.children.each { |c| c.shutdown! }
+        @_as.children.clear
+      end
 
       return nil
     end
@@ -186,6 +219,15 @@ module Tribe
       @_as.active_event = nil
 
       return nil
+    end
+
+    def spawn(klass, options = {})
+      options[:parent] = self
+
+      @_as.children ||= []
+      @_as.children << (actor = klass.new(options))
+
+      return actor
     end
 
     def push_event(event)

@@ -1,10 +1,15 @@
 module Tribe
-  class ActorShutdownError < RuntimeError; end
-  class ActorNameError < RuntimeError; end
+  class TribeError < RuntimeError
+    attr_accessor :data
+  end
 
-  class FutureError < RuntimeError; end
-  class FutureNoResult < RuntimeError; end
-  class FutureTimeout < RuntimeError; end
+  class ActorShutdownError < TribeError; end
+  class ActorNameError < TribeError; end
+  class ActorChildDied < TribeError; end
 
-  class RegistryError < RuntimeError; end
+  class FutureError < TribeError; end
+  class FutureNoResult < TribeError; end
+  class FutureTimeout < TribeError; end
+
+  class RegistryError < TribeError; end
 end

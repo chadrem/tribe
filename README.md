@@ -46,10 +46,12 @@ More information on them will be provided throughout this readme.
       end
 
       def exception_handler(e)
+        super
         puts concat_e("MyActor (#{identifier}) died.", e)
       end
 
       def shutdown_handler(event)
+        super
         puts "MyActor (#{identifier}) is shutting down.  Put cleanup code here."
       end
     end
@@ -147,6 +149,7 @@ No waiting for a result is involved and the actor will continue to process other
     class ActorA < Tribe::Actor
     private
       def exception_handler(e)
+        super
         puts concat_e("ActorA (#{identifier}) died.", e)
       end
 
@@ -171,6 +174,7 @@ No waiting for a result is involved and the actor will continue to process other
 
     class ActorB < Tribe::Actor
       def exception_handler(e)
+        super
         puts concat_e("ActorB (#{identifier}) died.", e)
       end
 
@@ -204,6 +208,7 @@ The actor won't process any other events until the future has a result.
     class ActorA < Tribe::Actor
     private
       def exception_handler(e)
+        super
         puts concat_e("ActorA (#{identifier}) died.", e)
       end
 
@@ -224,6 +229,7 @@ The actor won't process any other events until the future has a result.
 
     class ActorB < Tribe::Actor
       def exception_handler(e)
+        super
         puts concat_e("ActorB (#{identifier}) died.", e)
       end
 
@@ -288,10 +294,12 @@ This lets you build routers that delegate work to other actors.
       end
 
       def exception_handler(e)
+        super
         puts concat_e("MyRouter (#{identifier}) died.", e)
       end
 
       def shutdown_handler(event)
+        super
         puts "MyRouter (#{identifier}) is shutting down.  Put cleanup code here."
         @processors.each { |p| p.shutdown! }
       end
@@ -305,10 +313,12 @@ This lets you build routers that delegate work to other actors.
       end
 
       def exception_handler(e)
+        super
         puts concat_e("MyProcessor (#{identifier}) died.", e)
       end
 
       def shutdown_handler(event)
+        super
         puts "MyProcessor (#{identifier}) is shutting down.  Put cleanup code here."
       end
     end
