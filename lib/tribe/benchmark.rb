@@ -1,0 +1,1 @@
+require 'tribe/benchmark/throughput'

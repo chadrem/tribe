@@ -5,6 +5,7 @@ task :console do
   $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
 
   require 'tribe'
+  require 'tribe/benchmark'
   require 'irb'
 
   ARGV.clear
