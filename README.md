@@ -309,7 +309,7 @@ This lets you build routers that delegate work to other actors.
 
 ## Benchmarks
 
-  Please see the [performance] (http://en.wikipedia.org/wiki/Actor_model "performance") wiki page for more information.
+  Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
 
 ## TODO - missing features
 
