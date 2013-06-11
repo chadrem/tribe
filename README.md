@@ -25,17 +25,17 @@ Or install it yourself as:
 
 ## Features
 
-- [Actors](#Actors)
-- [Registries](#Registries)
-- [Timers](#Timers)
-- [Futures](#Futures)
-  - [Non-blocking](#Non-blocking)
-  - [Blocking](#Blocking)
-  - [Timeouts](#Timeouts)
-  - [Performance](#Performance-Summary)
-- [Forwarding](#Forwarding)
-- [Linking](#Linking)
-- [Supervisors](#Supervisors)
+- [Actors](#actors)
+- [Registries](#registries)
+- [Timers](#timers)
+- [Futures](#futures)
+  - [Non-blocking](#non-blocking)
+  - [Blocking](#blocking)
+  - [Timeouts](#timeouts)
+  - [Performance](#performance-summary)
+- [Forwarding](#forwarding)
+- [Linking](#linking)
+- [Supervisors](#supervisors)
 
 ## Actors
 
