@@ -387,6 +387,7 @@ As mentioned above, a failure in a linked actor will cause all associated actors
 Supervision can be used to block the failure from propogating and allow you to restart the failed section of the tree.
 
 *NOTE*: Restarting named actors is NOT currently supported, but will be in a future update.
+Attempting to do so may result in Tribe::RegistryError exceptions when trying to spawn a replacement child.
 
     # Create the root level actor class.
     class Level1 < Tribe::Actor
