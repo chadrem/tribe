@@ -23,6 +23,20 @@ Or install it yourself as:
 
     $ gem install tribe
 
+## Features
+
+- [Actors](#Actors)
+- [Registries](#Registries)
+- [Timers](#Timers)
+- [Futures](#Futures)
+  - [Non-blocking](#Non-blocking)
+  - [Blocking](#Blocking)
+  - [Timeouts](#Timeouts)
+  - [Performance](#Performance-Summary)
+- [Forwarding](#Forwarding)
+- [Linking](#Linking)
+- [Supervisors](#Supervisors)
+
 ## Actors
 
 Actors are light-weight objects that use asynchronous message passing for communcation.
@@ -381,10 +395,10 @@ If any actor in a tree of linked actors dies, it will cause all actors above and
     # Tell the root actor to create the tree of children.
     root.message!(:spawn)
 
-## Supervision
+## Supervisors
 
 As mentioned above, a failure in a linked actor will cause all associated actors (parent and children) to die.
-Supervision can be used to block the failure from propogating and allow you to restart the failed section of the tree.
+Supervisors can be used to block the failure from propogating and allow you to restart the failed section of the tree.
 
     # Create the root level actor class.
     class Level1 < Tribe::Actor
