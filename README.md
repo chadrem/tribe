@@ -381,7 +381,7 @@ If any actor in a tree of linked actors dies, it will cause all actors above and
     # Tell the root actor to create the tree of children.
     root.message!(:spawn)
 
-## Supervision (experimental)
+## Supervision
 
 As mentioned above, a failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervision can be used to block the failure from propogating and allow you to restart the failed section of the tree.
