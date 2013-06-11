@@ -386,7 +386,8 @@ If any actor in a tree of lined actors dies, it will cause all actors above and 
 As mentioned above, a failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervision can be used to block the failure from propogating and allow you to restart the failed section of the tree.
 
-*NOTE*: Restarting named actors is NOT currently supported, but will be in a future update.
+#### Important!
+Restarting named actors is NOT currently supported, but will be in a future update.
 Attempting to do so may result in Tribe::RegistryError exceptions when trying to spawn a replacement child.
 
     # Create the root level actor class.
