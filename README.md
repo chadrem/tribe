@@ -84,7 +84,8 @@ Actors that block for long periods of time should use a dedicated thread (:dedic
       :dedicated => false,              # If true, the actor runs with a worker pool that has one thread.
       :pool => Workers.pool,            # The workers pool used to execute events.
       :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
-      :name => nil                      # The name of the actor (must be unique in the registry).
+      :name => nil,                     # The name of the actor (must be unique in the registry).
+      :parent => nil                    # Set the parent actor (used by the supervision feature).
     )
 
 ## Registries
@@ -333,6 +334,105 @@ This lets you build routers that delegate work to other actors.
 
     # Shutdown the router.
     router.shutdown!
+
+## Linking
+
+Linking allows actors to group together into a tree structure such that they all live or die as one group.
+Such linking is useful for breaking complex problems into smaller (and easier to manage) components.
+To create a linked actor you use the Actable#spawn method to create it.
+If any actor in a tree of lined actors dies, it will cause all actors above and below it to die too.
+
+    # Create the root level actor class.
+    class Level1 < Tribe::Actor
+      private
+      def on_spawn(event)
+        5.times do |i|
+          name = "level2_#{i}"
+          puts name
+          actor = spawn(Level2, :name => name)
+          actor.message!(:spawn, i)
+        end
+      end
+    end
+
+    # Create the mid-level actor class.
+    class Level2 < Tribe::Actor
+      private
+      def on_spawn(event)
+        5.times do |i|
+          name = "level3_#{event.data}_#{i}"
+          actor = spawn(Level3, :name => name)
+          actor.message!(:spawn)
+        end
+      end
+    end
+
+    # Create the bottom level actor class.
+    class Level3 < Tribe::Actor
+      private
+      def on_spawn(event)
+        puts "#{identifier} hello world!"
+      end
+    end
+
+    # Create the root actor.
+    root = Level1.new(:name => 'level1')
+
+    # Tell the root actor to create the tree of children.
+    root.message!(:spawn)
+
+## Supervision (experimental)
+
+As mentioned above, a failure in a linked actor will cause all associated actors (parent and children) to die.
+Supervision can be used to block the failure from propogating and allow you to restart the failed section of the tree.
+
+*NOTE*: Restarting named actors is NOT currently supported, but will be in a future update.
+
+    # Create the root level actor class.
+    class Level1 < Tribe::Actor
+      private
+      def on_spawn(event)
+        5.times do |i|
+          create_subtree
+        end
+      end
+
+      def create_subtree
+        actor = spawn(Level2)
+        actor.message!(:spawn)
+      end
+
+      def child_died_handler(actor, exception)
+        puts "My child (#{actor.identifier}) died.  Restarting it."
+        create_subtree
+      end
+    end
+
+    # Create the mid-level actor class.
+    class Level2 < Tribe::Actor
+      private
+      def on_spawn(event)
+        5.times do |i|
+          actor = spawn(Level3)
+          actor.message!(:spawn)
+        end
+      end
+    end
+
+    # Create the bottom level actor class.
+    class Level3 < Tribe::Actor
+      private
+      def on_spawn(event)
+        puts "#{identifier} says hello world!"
+        raise 'Sometimes I like to die.' if rand < 0.5
+      end
+    end
+
+    # Create the root actor.
+    root = Level1.new(:name => 'root')
+
+    # Tell the root actor to create the tree of children.
+    root.message!(:spawn)
 
 ## Benchmarks
 

@@ -111,6 +111,12 @@ module Tribe
         @_as.parent.message!(:_child_died, [self, exception])
       end
 
+      if @_as.children
+        @_as.children.each { |c| c.message!(:_parent_died, [self, exception]) }
+        @_as.children.clear
+        @_as.children = nil
+      end
+
       return nil
     end
 
@@ -131,16 +137,21 @@ module Tribe
       @_as.registry.unregister(self)
       @_as.timers.each { |t| t.cancel } if @_as.timers
 
-      if @_as.children
+      if @_as.children && exception.nil?
         @_as.children.each { |c| c.shutdown! }
         @_as.children.clear
+        @_as.children = nil
       end
 
       return nil
     end
 
     def child_died_handler(child, exception)
-      raise ActorUnandledChild.new("#{child.identifier} died.")
+      raise Tribe::ActorChildDied.new("#{child.identifier} died.")
+    end
+
+    def parent_died_handler(parent, exception)
+      raise Tribe::ActorParentDied.new("#{parent.identifier} died.")
     end
 
     #
@@ -229,6 +240,8 @@ module Tribe
           perform_handler(event)
         when :_child_died
           child_died_handler(event.data[0], event.data[1])
+        when :_parent_died
+          parent_died_handler(event.data[0], event.data[1])
         else
           event_handler(event)
         end
