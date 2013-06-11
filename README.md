@@ -440,12 +440,6 @@ Attempting to do so may result in Tribe::RegistryError exceptions when trying to
 
   Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
 
-## TODO - missing features
-
-- Supervisors.
-- Linking.
-- Remote actors (Tribe clustering).
-
 ## Contributing
 
 1. Fork it
