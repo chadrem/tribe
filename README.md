@@ -46,7 +46,7 @@ Actors are light-weight objects that use asynchronous message passing for commun
 There are two types of methods that you create in your actors:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
-2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are used for exception, shutdown, and cleanup handling.
+2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the Tribe's actor system.
 
 To send a message you use the Actable#message! method and specify a command with an optional data parameter.
 The return value will always be nil since messaging is asynchronous.
