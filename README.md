@@ -9,6 +9,23 @@ It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers
 
 Event-driven servers can be built using [Tribe EM] (https://github.com/chadrem/tribe_em "Tribe EM").
 
+## Contents
+
+- [Installation](#installation)
+- [Actors](#actors)
+- [Registries](#registries)
+- [Timers](#timers)
+- [Futures](#futures)
+  - [Non-blocking](#non-blocking)
+  - [Blocking](#blocking)
+  - [Timeouts](#timeouts)
+  - [Performance](#performance-summary)
+- [Forwarding](#forwarding)
+- [Linking](#linking)
+- [Supervisors](#supervisors)
+- [Benchmarks](#benchmarks)
+- [Contributing](#contributing)
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -22,20 +39,6 @@ And then execute:
 Or install it yourself as:
 
     $ gem install tribe
-
-## Features
-
-- [Actors](#actors)
-- [Registries](#registries)
-- [Timers](#timers)
-- [Futures](#futures)
-  - [Non-blocking](#non-blocking)
-  - [Blocking](#blocking)
-  - [Timeouts](#timeouts)
-  - [Performance](#performance-summary)
-- [Forwarding](#forwarding)
-- [Linking](#linking)
-- [Supervisors](#supervisors)
 
 ## Actors
 
