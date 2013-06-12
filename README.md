@@ -96,7 +96,9 @@ More information on them will be provided throughout this readme.
 Because actors use a shared thread pool, it is important that they don't block for long periods of time (short periods are fine).
 Actors that block for long periods of time should use a dedicated thread (:dedicated => true or subclass from Tribe::DedicatedActor).
 
-#### Options (defaults below)
+#### Options
+
+Below you will find the constructor options the Tribe::Actor class (with default values):
 
     actor = Tribe::Actor.new(
       :logger => nil,                   # Ruby logger instance.
