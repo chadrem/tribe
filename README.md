@@ -106,7 +106,7 @@ Below you will find the constructor options the Tribe::Actor class (with default
       :pool => Workers.pool,            # The workers pool used to execute events.
       :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
       :name => nil,                     # The name of the actor (must be unique in the registry).
-      :parent => nil                    # Set the parent actor (used by the supervision feature).
+      :parent => nil                    # Set the parent actor (used by the supervisors).
     )
 
 ## Registries
