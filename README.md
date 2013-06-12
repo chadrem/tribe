@@ -13,6 +13,8 @@ Event-driven servers can be built using [Tribe EM] (https://github.com/chadrem/t
 
 - [Installation](#installation)
 - [Actors](#actors)
+  - [Implementation](#implementation)
+  - [Options](#options)
 - [Registries](#registries)
 - [Timers](#timers)
 - [Futures](#futures)
