@@ -15,15 +15,15 @@ Event-driven servers can be built using [Tribe EM] (https://github.com/chadrem/t
 - [Actors](#actors)
   - [Root](#root-actor)
   - [Handlers](#handlers)
-  - [Messages](#messages)
+- [Messages](#messages)
 - [Registries](#registries)
-- [Timers](#timers)
 - [Futures](#futures)
   - [Non-blocking](#non-blocking)
   - [Blocking](#blocking)
   - [Timeouts](#timeouts)
   - [Performance](#performance-summary)
 - [Forwarding](#forwarding)
+- [Timers](#timers)
 - [Linking](#linking)
 - [Supervisors](#supervisors)
 - [Benchmarks](#benchmarks)
@@ -68,7 +68,7 @@ There are two types of methods that you create in your actor classes:
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
 2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the Tribe's actor system.
 
-#### Messages
+## Messages
 
 Messages are the most basic type of communication that tribe offers.
 They are sent using using the Actable#message! and Actable#deliver_message! methods.
@@ -120,45 +120,9 @@ In general you shouldn't have to create your own since there is a global one (Tr
       puts 'Successfully found some_actor in the registry.'
     end
 
-## Timers
-
-Actors can create timers to perform some work in the future.
-Both one-shot and periodic timers are provided.
-
-    class MyActor < Tribe::Actor
-      private
-      def initialize(options = {})
-        super
-        timer(1, :timer, Time.now)
-        periodic_timer(1, :periodic_timer, Time.now)
-      end
-
-      def on_timer(event)
-        puts "MyActor (#{identifier}) ONE-SHOT: #{event.data}"
-      end
-
-      def on_periodic_timer(event)
-        puts "MyActor (#{identifier}) PERIODIC: #{event.data}"
-      end
-    end
-
-    # Create some named actors.
-    10.times do |i|
-      Tribe.root.spawn(MyActor, :name => "my_actor_#{i}")
-    end
-
-    # Sleep in order to observe the timers.
-    sleep(10)
-
-    # Shutdown the actors.
-    10.times do |i|
-      actor = Tribe.registry["my_actor_#{i}"]
-      actor.shutdown!
-    end
-
 ## Futures
 
-Message passing with the Actable#message! and Actable#deliver_message! methods is asynchronous and always returns nil.
+Message passing with the Actable#message! is asynchronous and always returns nil.
 This can be a pain since in many cases you will be interested in the result.
 The Actable#future! method solves this problem by returning a Tribe::Future object.
 You can then use this object to obtain the result when it becomes available.
@@ -345,6 +309,42 @@ This lets you build routers that delegate work to other actors.
 
     # Shutdown the router.
     router.shutdown!
+
+## Timers
+
+Actors can create timers to perform some work in the future.
+Both one-shot and periodic timers are provided.
+
+    class MyActor < Tribe::Actor
+      private
+      def initialize(options = {})
+        super
+        timer(1, :timer, Time.now)
+        periodic_timer(1, :periodic_timer, Time.now)
+      end
+
+      def on_timer(event)
+        puts "MyActor (#{identifier}) ONE-SHOT: #{event.data}"
+      end
+
+      def on_periodic_timer(event)
+        puts "MyActor (#{identifier}) PERIODIC: #{event.data}"
+      end
+    end
+
+    # Create some named actors.
+    10.times do |i|
+      Tribe.root.spawn(MyActor, :name => "my_actor_#{i}")
+    end
+
+    # Sleep in order to observe the timers.
+    sleep(10)
+
+    # Shutdown the actors.
+    10.times do |i|
+      actor = Tribe.registry["my_actor_#{i}"]
+      actor.shutdown!
+    end
 
 ## Linking
 
