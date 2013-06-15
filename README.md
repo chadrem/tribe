@@ -153,9 +153,9 @@ Both one-shot and periodic timers are provided.
 
 ## Futures
 
-As mentioned above, message passing with the Actable#message! method is asynchronous and always returns nil.
+Message passing with the Actable#message! and Actable#deliver_message! methods is asynchronous and always returns nil.
 This can be a pain since in many cases you will be interested in the result.
-The Actable#future! method solves this problem by returning a Tribe::Future object instead of nil.
+The Actable#future! method solves this problem by returning a Tribe::Future object.
 You can then use this object to obtain the result when it becomes available.
 
 #### Non-blocking
