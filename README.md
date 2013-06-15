@@ -397,7 +397,7 @@ Thus the entire tree lives or dies together.
 
 A failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating.
-You can then have the option to re-create the failed actor.
+You then have the option to re-create the failed actor.
 
     # Create the top-level actor class.
     class Level1 < Tribe::Actor
