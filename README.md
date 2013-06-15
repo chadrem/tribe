@@ -68,8 +68,8 @@ You should use the root actor to spawn all of your application specific actors.
 
 There are two types of methods that you create in your actor classes:
 
-- *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
-- *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the actor system.
+- **Command handlers** are prefixed with "on_" and define the types of commands your actor will process.
+- **System handlers** are postfixed with "_handler" and are built into the actor system.  These are hooks into the actor system.
 
 ## Messages
 
