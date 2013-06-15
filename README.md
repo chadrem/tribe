@@ -58,7 +58,7 @@ You should use this actor to spawn all of your application specific actors.
 
 #### Handlers
 
-There are two types of methods that you create in your actors:
+There are two types of methods that you create in your actor classes:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
 2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the Tribe's actor system.
