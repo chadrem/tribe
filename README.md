@@ -347,8 +347,8 @@ This lets you build routers that delegate work to other actors.
 
 Linking allows actors to group together into a tree structure such that they all live or die as one group.
 Such linking is useful for breaking up complex problems into multiple smaller units.
-To create a linked actor you use the Actable#spawn method to create it.
-If any actor in a tree of linked actors dies, it will cause all actors above and below it to die too.
+To create a linked actor you use the Actable#spawn method.
+By default, if any actor in a tree of linked actors dies, it will kill its parent and children.
 
     # Create the top-level actor class.
     class Level1 < Tribe::Actor
@@ -391,7 +391,7 @@ If any actor in a tree of linked actors dies, it will cause all actors above and
 
 ## Supervisors
 
-As mentioned above, a failure in a linked actor will cause all associated actors (parent and children) to die.
+A failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating and allow you to restart the failed section of the tree.
 
     # Create the top-level actor class.
@@ -441,6 +441,7 @@ Supervisors can be used to block the failure from propogating and allow you to r
     top.deliver_message!(:spawn)
 
 #### Important!
+
 Restarting named actors is NOT currently supported, but will be in a future update.
 Attempting to do so may result in Tribe::RegistryError exceptions when trying to spawn a replacement child.
 
