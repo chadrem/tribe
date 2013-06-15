@@ -37,35 +37,64 @@ module Tribe
 
     public
 
-    def event!(event)
-      push_event(event)
+    def deliver_event!(event)
+      @_as.mailbox.push(event) do
+        process_events
+      end
 
       return nil
     end
 
-    def message!(command, data = nil, source = nil)
-      event = Tribe::Event.new(command, data, source)
-
-      push_event(event)
+    def deliver_message!(command, data = nil, src = nil)
+      deliver_event!(Tribe::Event.new(command, data, src))
 
       return nil
     end
 
-    def future!(command, data = nil, source = nil)
-      event = Tribe::Event.new(command, data, source)
-      event.future = future = Tribe::Future.new
+    def message!(dest, command, data = nil)
+      event = Tribe::Event.new(command, data, self)
 
-      push_event(event)
+      dest.deliver_event!(event)
+
+      return nil
+    end
+
+    def future!(dest, command, data = nil)
+      event = Tribe::Event.new(command, data, self)
+      event.future = future = Tribe::Future.new(self)
+
+      dest.deliver_event!(event)
 
       return future
     end
 
     def shutdown!
-      return message!(:_shutdown)
+      return deliver_message!(:_shutdown)
     end
 
     def perform!(&block)
-      return message!(:_perform, block)
+      return deliver_message!(:_perform, block)
+    end
+
+    def spawn(klass, actor_options = {}, spawn_options = {})
+      actor_options[:parent] = self
+
+      @_as.children ||= []
+      child = nil
+
+      if spawn_options[:no_raise_on_failure]
+        begin
+          child = klass.new(actor_options)
+        rescue Exception => e
+          return false
+        end
+      else
+        child = klass.new(actor_options)
+      end
+
+      @_as.children << child
+
+      return child
     end
 
     def alive?
@@ -108,11 +137,11 @@ module Tribe
 
     def exception_handler(exception)
       if @_as.parent
-        @_as.parent.message!(:_child_died, [self, exception])
+        @_as.parent.deliver_message!(:_child_died, [self, exception])
       end
 
       if @_as.children
-        @_as.children.each { |c| c.message!(:_parent_died, [self, exception]) }
+        @_as.children.each { |c| c.deliver_message!(:_parent_died, [self, exception]) }
         @_as.children.clear
         @_as.children = nil
       end
@@ -176,7 +205,7 @@ module Tribe
 
       timer = Workers::Timer.new(delay, :scheduler => @_as.scheduler) do
         @_as.timers.delete(timer)
-        message!(command, data)
+        deliver_message!(command, data)
       end
 
       @_as.timers.add(timer)
@@ -190,7 +219,7 @@ module Tribe
       @_as.timers ||= Tribe::SafeSet.new
 
       timer = Workers::PeriodicTimer.new(delay, :scheduler => @_as.scheduler) do
-        message!(command, data)
+        deliver_message!(command, data)
         unless alive?
           @_as.timers.delete(timer)
           timer.cancel
@@ -208,25 +237,10 @@ module Tribe
     #
 
     def forward!(dest)
-      dest.event!(@_as.active_event)
+      dest.deliver_event!(@_as.active_event)
       @_as.active_event = nil
 
       return nil
-    end
-
-    def spawn(klass, options = {})
-      options[:parent] = self
-
-      @_as.children ||= []
-      @_as.children << (actor = klass.new(options))
-
-      return actor
-    end
-
-    def push_event(event)
-      @_as.mailbox.push(event) do
-        process_events
-      end
     end
 
     # All system commands are prefixed with an underscore.

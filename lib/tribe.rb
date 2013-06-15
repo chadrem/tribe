@@ -12,6 +12,7 @@ require 'tribe/actor'
 require 'tribe/dedicated_actor'
 require 'tribe/registry'
 require 'tribe/future'
+require 'tribe/root'
 
 module Tribe
   def self.registry
@@ -22,7 +23,12 @@ module Tribe
     @registry.dispose if @registry
     @registry = val
   end
+
+  def self.root
+    @root ||= Tribe::Root.new(:name => 'root', :permit_root => true)
+  end
 end
 
-# Force initialization of defaults.
+# Force initialization.
 Tribe.registry
+Tribe.root

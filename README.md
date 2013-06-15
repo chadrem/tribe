@@ -13,8 +13,9 @@ Event-driven servers can be built using [Tribe EM] (https://github.com/chadrem/t
 
 - [Installation](#installation)
 - [Actors](#actors)
-  - [Implementation](#implementation)
-  - [Options](#options)
+  - [Root](#root-actor)
+  - [Handlers](#handlers)
+  - [Messages](#messages)
 - [Registries](#registries)
 - [Timers](#timers)
 - [Futures](#futures)
@@ -45,17 +46,27 @@ Or install it yourself as:
 ## Actors
 
 Actors are light-weight objects that use asynchronous message passing for communcation.
+
+#### Root actor
+
+Well designed applications built on the actor model tend to organize their actors in a tree like structure.
+To encourage this, Tribe has a special built-in actor known as the root actor:
+
+    Tribe.root
+
+You should use the root actor to create all of your application specific actors.
+
+#### Handlers
+
 There are two types of methods that you create in your actors:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
 2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the Tribe's actor system.
 
-To send a message you use the Actable#message! method and specify a command with an optional data parameter.
-The return value will always be nil since messaging is asynchronous.
+#### Messages
 
-Note that the actors have a number of methods that end in ! (exclamation point or “bang”).
-All of these mthods are asynchronous and designed to be thread safe.
-More information on them will be provided throughout this readme.
+Actors communicate asynchronously using a number of methods that end in ! (exclamation point or “bang”).
+The most basic type is known as a fire and forget message and is available using the Actable#message! and Actable#deliver_message! methods.
 
     # Create your custom actor class.
     class MyActor < Tribe::Actor
@@ -75,15 +86,15 @@ More information on them will be provided throughout this readme.
       end
     end
 
-    # Create some named actors.
+    # Create some named actors that are children of the root actor.
     100.times do |i|
-      MyActor.new(:name => "my_actor_#{i}")
+      Tribe.root.spawn(MyActor, :name => "my_actor_#{i}")
     end
 
     # Send an event to each actor.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
-      actor.message!(:my_custom, 'hello world')
+      actor.deliver_message!(:my_custom, 'hello world')
     end
 
     # Shutdown the actors.
@@ -92,29 +103,12 @@ More information on them will be provided throughout this readme.
       actor.shutdown!
     end
 
-#### Implementation
-Because actors use a shared thread pool, it is important that they don't block for long periods of time (short periods are fine).
-Actors that block for long periods of time should use a dedicated thread (:dedicated => true or subclass from Tribe::DedicatedActor).
-
-#### Options
-
-Below you will find the constructor options the Tribe::Actor class (with default values):
-
-    actor = Tribe::Actor.new(
-      :logger => nil,                   # Ruby logger instance.
-      :dedicated => false,              # If true, the actor runs with a worker pool that has one thread.
-      :pool => Workers.pool,            # The workers pool used to execute events.
-      :registry => Tribe.registry,      # The registry used to store a reference to the actor if it has a name.
-      :name => nil,                     # The name of the actor (must be unique in the registry).
-      :parent => nil                    # Set the parent actor (used by the supervisors).
-    )
-
 ## Registries
 
 Registries hold references to named actors so that you can easily find them.
 In general you shouldn't have to create your own since there is a global one (Tribe.registry).
 
-    actor = Tribe::Actor.new(:name => 'some_actor')
+    actor = Tribe.root.spawn(Tribe::Actor, :name => 'some_actor')
 
     if actor == Tribe.registry['some_actor']
       puts 'Successfully found some_actor in the registry.'
@@ -144,7 +138,7 @@ Both one-shot and periodic timers are provided.
 
     # Create some named actors.
     10.times do |i|
-      MyActor.new(:name => "my_actor_#{i}")
+      Tribe.root.spawn(MyActor, :name => "my_actor_#{i}")
     end
 
     # Sleep in order to observe the timers.
@@ -178,18 +172,14 @@ No waiting for a result is involved and the actor will continue to process other
       def on_start(event)
         friend = registry['actor_b']
 
-        future = friend.future!(:compute, 10)
+        future = future!(friend, :compute, 10)
 
         future.success do |result|
-          perform! do
-            puts "ActorA (#{identifier}) future result: #{result}"
-          end
+          puts "ActorA (#{identifier}) future result: #{result}"
         end
 
         future.failure do |exception|
-          perform! do
-            puts "ActorA (#{identifier}) future failure: #{exception}"
-          end
+          puts "ActorA (#{identifier}) future failure: #{exception}"
         end
       end
     end
@@ -210,17 +200,13 @@ No waiting for a result is involved and the actor will continue to process other
       end
     end
 
-    actor_a = ActorA.new(:name => 'actor_a')
-    actor_b = ActorB.new(:name => 'actor_b')
+    actor_a = Tribe.root.spawn(ActorA, :name => 'actor_a')
+    actor_b = Tribe.root.spawn(ActorB, :name => 'actor_b')
 
-    actor_a.message!(:start)
+    actor_a.deliver_message!(:start)
 
     actor_a.shutdown!
     actor_b.shutdown!
-
-*Important*: You must use Actable#perform! inside the above callbacks.
-This ensures that your code executes within the context of the correct actor.
-Failure to do so will result in unexpected behavior (thread safety will be lost)!
 
 #### Blocking
 
@@ -237,7 +223,7 @@ The actor won't process any other events until the future has a result.
       def on_start(event)
         friend = registry['actor_b']
 
-        future = friend.future!(:compute, 10)
+        future = future!(friend, :compute, 10)
 
         future.wait # The current thread will sleep until a result is available.
 
@@ -265,10 +251,10 @@ The actor won't process any other events until the future has a result.
       end
     end
 
-    actor_a = ActorA.new(:name => 'actor_a')
-    actor_b = ActorB.new(:name => 'actor_b')
+    actor_a = Tribe.root.spawn(ActorA, :name => 'actor_a')
+    actor_b = Tribe.root.spawn(ActorB, :name => 'actor_b')
 
-    actor_a.message!(:start)
+    actor_a.deliver_message!(:start)
 
     actor_a.shutdown!
     actor_b.shutdown!
@@ -278,7 +264,7 @@ The actor won't process any other events until the future has a result.
 Futures can be confgured to timeout after a specified number of seconds.
 When a timeout occurs, the result of the future will be a Tribe::FutureTimeout exception.
 
-    # Manually create a future (Use Actable#future! in your actors).
+    # Manually create a future for this example (Use Actable#future! in your actors).
     future = Tribe::Future.new
 
     # Set a timeout (in seconds).
@@ -346,11 +332,11 @@ This lets you build routers that delegate work to other actors.
     end
 
     # Create the router.
-    router = MyRouter.new(:name => 'router')
+    router = Tribe.root.spawn(MyRouter, :name => 'router')
 
     # Send an event to the router and it will forward it to a random processor.
     100.times do |i|
-      router.message!(:process, i)
+      router.deliver_message!(:process, i)
     end
 
     # Shutdown the router.
@@ -363,7 +349,7 @@ Such linking is useful for breaking complex problems into smaller (and easier to
 To create a linked actor you use the Actable#spawn method to create it.
 If any actor in a tree of linked actors dies, it will cause all actors above and below it to die too.
 
-    # Create the root level actor class.
+    # Create the top-level actor class.
     class Level1 < Tribe::Actor
       private
       def on_spawn(event)
@@ -371,7 +357,7 @@ If any actor in a tree of linked actors dies, it will cause all actors above and
           name = "level2_#{i}"
           puts name
           actor = spawn(Level2, :name => name)
-          actor.message!(:spawn, i)
+          message!(actor, :spawn, i)
         end
       end
     end
@@ -383,7 +369,7 @@ If any actor in a tree of linked actors dies, it will cause all actors above and
         5.times do |i|
           name = "level3_#{event.data}_#{i}"
           actor = spawn(Level3, :name => name)
-          actor.message!(:spawn)
+          message!(actor, :spawn)
         end
       end
     end
@@ -396,18 +382,18 @@ If any actor in a tree of linked actors dies, it will cause all actors above and
       end
     end
 
-    # Create the root actor.
-    root = Level1.new(:name => 'level1')
+    # Create the top-level actor.
+    top = Tribe.root.spawn(Level1, :name => 'level1')
 
     # Tell the root actor to create the tree of children.
-    root.message!(:spawn)
+    top.deliver_message!(:spawn)
 
 ## Supervisors
 
 As mentioned above, a failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating and allow you to restart the failed section of the tree.
 
-    # Create the root level actor class.
+    # Create the top-level actor class.
     class Level1 < Tribe::Actor
       private
       def on_spawn(event)
@@ -418,7 +404,7 @@ Supervisors can be used to block the failure from propogating and allow you to r
 
       def create_subtree
         actor = spawn(Level2)
-        actor.message!(:spawn)
+        message!(actor, :spawn)
       end
 
       def child_died_handler(actor, exception)
@@ -433,7 +419,7 @@ Supervisors can be used to block the failure from propogating and allow you to r
       def on_spawn(event)
         5.times do |i|
           actor = spawn(Level3)
-          actor.message!(:spawn)
+          message!(actor, :spawn)
         end
       end
     end
@@ -447,11 +433,11 @@ Supervisors can be used to block the failure from propogating and allow you to r
       end
     end
 
-    # Create the root actor.
-    root = Level1.new(:name => 'root')
+    # Create the top-level actor.
+    top = Tribe.root.spawn(Level1, :name => 'root')
 
-    # Tell the root actor to create the tree of children.
-    root.message!(:spawn)
+    # Tell the top-level actor to create the tree of children.
+    top.deliver_message!(:spawn)
 
 #### Important!
 Restarting named actors is NOT currently supported, but will be in a future update.

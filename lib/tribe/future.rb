@@ -1,12 +1,13 @@
 module Tribe
   class Future
-    def initialize
+    def initialize(actor = nil)
       @state = :initialized
       @mutex = Mutex.new
       @condition = ConditionVariable.new
       @result = nil
       @success_callback = nil
       @failure_callback = nil
+      @actor = actor
 
       return nil
     end
@@ -34,9 +35,25 @@ module Tribe
         @condition.signal
 
         if val.is_a?(Exception)
-          @failure_callback.call(val) if @failure_callback
+          if @failure_callback
+            if @actor
+              @actor.perform! do
+                @failure_callback.call(val)
+              end
+            else
+              @failure_callback.call(val)
+            end
+          end
         else
-          @success_callback.call(val) if @success_callback
+          if @success_callback
+            if @actor
+              @actor.perform! do
+                @success_callback.call(val)
+              end
+            else
+              @success_callback.call(val)
+            end
+          end
         end
 
         return nil
@@ -79,7 +96,15 @@ module Tribe
         when :initialized
           @success_callback = block
         when :finished
-          yield(@result) unless @result.is_a?(Exception)
+          unless @result.is_a?(Exception)
+            if @actor
+              @actor.perform! do
+                block.call(@result)
+              end
+            else
+              block.call(@result)
+            end
+          end
         else
           raise Tribe::FutureError.new('Invalid state.')
         end
@@ -94,7 +119,15 @@ module Tribe
         when :initialized
           @failure_callback = block
         when :finished
-          yield(@result) if @result.is_a?(Exception)
+          if @result.is_a?(Exception)
+            if @actor
+              @actor.perform! do
+                block.call(@result)
+              end
+            else
+              block.call(@result)
+            end
+          end
         else
           raise Tribe::FutureError.new('Invalid state.')
         end
