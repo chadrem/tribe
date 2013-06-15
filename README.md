@@ -346,7 +346,7 @@ This lets you build routers that delegate work to other actors.
 ## Linking
 
 Linking allows actors to group together into a tree structure such that they all live or die as one group.
-Such linking is useful for breaking complex problems into smaller (and easier to manage) components.
+Such linking is useful for breaking up complex problems into multiple smaller units.
 To create a linked actor you use the Actable#spawn method to create it.
 If any actor in a tree of linked actors dies, it will cause all actors above and below it to die too.
 
