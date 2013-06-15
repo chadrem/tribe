@@ -70,9 +70,9 @@ There are two types of methods that you create in your actor classes:
 
 #### Messages
 
-Actors communicate asynchronously using a number of methods that end in ! (exclamation point or “bang”).
-The most basic type of communication is a message and they are sent using using the Actable#message! and Actable#deliver_message! methods.
-These methods always return nil since they are fire-and-forget.
+Messages are the most basic type of communication that tribe offers.
+They are sent using using the Actable#message! and Actable#deliver_message! methods.
+Since they are fire-and-forget, these methods will always return nil.
 
     # Create your custom actor class.
     class MyActor < Tribe::Actor
