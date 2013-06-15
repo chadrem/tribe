@@ -54,12 +54,9 @@ There are three ways to create an actor class:
 
 #### Root
 
-Well designed actor model applications tend to organize their actors in a tree like structure.
-To encourage this, Tribe has a special built-in actor known as the root actor:
-
-    Tribe.root
-
-You should use the root actor to spawn all of your application specific actors:
+Well designed application organizes its actors in a tree like structure.
+To encourage this, Tribe has a special built-in actor known as the root actor.
+You should use the root actor to spawn all of your application specific actors.
 
     class MyActor < Tribe::Actor
       # Your code goes here.
@@ -72,11 +69,11 @@ You should use the root actor to spawn all of your application specific actors:
 There are two types of methods that you create in your actor classes:
 
 1. *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
-2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the Tribe's actor system.
+2. *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the actor system.
 
 ## Messages
 
-Messages are the most basic type of communication that tribe offers.
+Messages are the most basic type of communication.
 They are sent using using the Actable#message! and Actable#deliver_message! methods.
 Since they are fire-and-forget, these methods always return nil.
 
@@ -118,7 +115,7 @@ Since they are fire-and-forget, these methods always return nil.
 ## Registries
 
 Registries hold references to named actors so that you can easily find them.
-In general you shouldn't have to create your own since there is a global one (Tribe.registry).
+You don't have to create your own since there is a global one (Tribe.registry).
 
     actor = Tribe.root.spawn(Tribe::Actor, :name => 'some_actor')
 
@@ -252,7 +249,7 @@ When a timeout occurs, the result of the future will be a Tribe::FutureTimeout e
 
 #### Performance Summary
 
-Below you will find a summary of performance recommendations regarding the use of futures:
+Below you will find a summary of performance recommendations for futures:
 
 - Use Actable#message! unless you really need Actable#future! since futures have overhead.
 - If you use Actable#future!, prefer the non-blocking API over the blocking one.
