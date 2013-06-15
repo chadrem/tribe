@@ -298,7 +298,7 @@ This lets you build routers that delegate work to other actors.
       private
       def initialize(options = {})
         super
-        @processors = 100.times.map { MyProcessor.new }
+        @processors = 100.times.map { Tribe.root.spawn(MyProcessor) }
       end
 
       def on_process(event)
