@@ -45,7 +45,13 @@ Or install it yourself as:
 
 ## Actors
 
-Actors are light-weight objects that use asynchronous message passing for communcation.
+Actors are the building blocks of your application.
+There are three ways to create an actor class:
+
+- Inherit from Tribe::Actor (uses the shared thread pool).
+- Inherit from Tribe::DedicatedActor (uses a dedicated thread).
+- Mixin Tribe::Actable and call the Actable#init_actable method in your constructor.
+
 
 #### Root
 
