@@ -13,7 +13,7 @@ Event-driven servers can be built using [Tribe EM] (https://github.com/chadrem/t
 
 - [Installation](#installation)
 - [Actors](#actors)
-  - [Root Actor](#root-actor)
+  - [Root](#root-actor)
   - [Handlers](#handlers)
   - [Messages](#messages)
 - [Registries](#registries)
@@ -47,9 +47,9 @@ Or install it yourself as:
 
 Actors are light-weight objects that use asynchronous message passing for communcation.
 
-#### Root actor
+#### Root
 
-Well designed applications built on the actor model tend to organize their actors in a tree like structure.
+Well designed applications built with the actor model tend to organize their actors in a tree like structure.
 To encourage this, Tribe has a special built-in actor known as the root actor:
 
     Tribe.root
