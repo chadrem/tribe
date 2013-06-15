@@ -50,11 +50,11 @@ Actors are light-weight objects that use asynchronous message passing for commun
 #### Root
 
 Well designed applications built with the actor model tend to organize their actors in a tree like structure.
-To encourage this, Tribe has a special built-in actor known as the root actor:
+To encourage this, Tribe has a special built-in actor known as the root actor.
+You should use this actor to spawn all of your application specific actors.
 
     Tribe.root
 
-You should use the root actor to create all of your application specific actors.
 
 #### Handlers
 
