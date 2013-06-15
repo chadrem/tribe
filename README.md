@@ -171,7 +171,6 @@ No waiting for a result is involved and the actor will continue to process other
 
       def on_start(event)
         friend = registry['actor_b']
-
         future = future!(friend, :compute, 10)
 
         future.success do |result|
@@ -222,7 +221,6 @@ The actor won't process any other events until the future has a result.
 
       def on_start(event)
         friend = registry['actor_b']
-
         future = future!(friend, :compute, 10)
 
         future.wait # The current thread will sleep until a result is available.
