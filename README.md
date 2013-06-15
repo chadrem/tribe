@@ -1,7 +1,6 @@
 # Tribe
 
-Tribe is a Ruby gem that implements event-driven [actors] (http://en.wikipedia.org/wiki/Actor_model "actors") (actor model).
-Actors are lightweight concurrent objects that use asynchronous message passing for communication.
+Tribe is a Ruby gem that implements the [actor model] (http://en.wikipedia.org/wiki/Actor_model "actors") in an event-driven way.
 
 Tribe focuses on high performance, low latency, a simple API, and flexibility.
 It's goal is to support at least one million actors running on a small group of threads.
@@ -55,11 +54,18 @@ There are three ways to create an actor class:
 
 #### Root
 
-Well designed applications built with the actor model tend to organize their actors in a tree like structure.
-To encourage this, Tribe has a special built-in actor known as the root actor.
-You should use this actor to spawn all of your application specific actors.
+Well designed actor model applications tend to organize their actors in a tree like structure.
+To encourage this, Tribe has a special built-in actor known as the root actor:
 
     Tribe.root
+
+You should use the root actor to spawn all of your application specific actors:
+
+    class MyActor < Tribe::Actor
+      # Your code goes here.
+    end
+
+    Tribe.root.spawn(MyActor)
 
 #### Handlers
 
@@ -72,7 +78,7 @@ There are two types of methods that you create in your actor classes:
 
 Messages are the most basic type of communication that tribe offers.
 They are sent using using the Actable#message! and Actable#deliver_message! methods.
-Since they are fire-and-forget, these methods will always return nil.
+Since they are fire-and-forget, these methods always return nil.
 
     # Create your custom actor class.
     class MyActor < Tribe::Actor
@@ -122,10 +128,10 @@ In general you shouldn't have to create your own since there is a global one (Tr
 
 ## Futures
 
-Message passing with the Actable#message! is asynchronous and always returns nil.
-This can be a pain since in many cases you will be interested in the result.
-The Actable#future! method solves this problem by returning a Tribe::Future object.
-You can then use this object to obtain the result when it becomes available.
+Messages are limited in that they are one way (fire-and-forget).
+Many times you'll be interested in receiving a response and this is where futures become useful.
+To send a future you use Actable#future! instead of Actable#message!.
+It will return a future object (instead of nil) that will give you access to the result when it becomes available.
 
 #### Non-blocking
 
@@ -348,11 +354,11 @@ Both one-shot and periodic timers are provided.
 
 ## Linking
 
-Linking allows actors to group together into a tree structure such that they all live or die as one group.
+Linking allows actors to group together so that they all live or die together.
 Such linking is useful for breaking up complex problems into multiple smaller units.
 To create a linked actor you use the Actable#spawn method.
 By default, if a linked actor dies, it will cause its parent and children to die too.
-Thus the entire tree lives or dies together.
+You an override this behavior using by using supervisors.
 
     # Create the top-level actor class.
     class Level1 < Tribe::Actor
@@ -397,7 +403,7 @@ Thus the entire tree lives or dies together.
 
 A failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating.
-You then have the option to re-create the failed actor.
+You then have the option to re-spawn the failed actor.
 
     # Create the top-level actor class.
     class Level1 < Tribe::Actor
