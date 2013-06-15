@@ -55,7 +55,6 @@ You should use this actor to spawn all of your application specific actors.
 
     Tribe.root
 
-
 #### Handlers
 
 There are two types of methods that you create in your actor classes:
