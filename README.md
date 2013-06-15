@@ -71,7 +71,7 @@ There are two types of methods that you create in your actor classes:
 #### Messages
 
 Actors communicate asynchronously using a number of methods that end in ! (exclamation point or “bang”).
-The most basic type of communication is known as a message and can be sent using using the Actable#message! and Actable#deliver_message! methods.
+The most basic type of communication is a message and they are sent using using the Actable#message! and Actable#deliver_message! methods.
 These methods always return nil since they are fire-and-forget.
 
     # Create your custom actor class.
