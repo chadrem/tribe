@@ -126,7 +126,7 @@ You don't have to create your own since there is a global one (Tribe.registry).
 ## Futures
 
 Messages are limited in that they are one way (fire-and-forget).
-Many times you'll be interested in receiving a response and this is where futures become useful.
+Many times you'll be interested in receiving a response and this is when futures become useful.
 To send a future you use Actable#future! instead of Actable#message!.
 It will return a future object (instead of nil) that will give you access to the result when it becomes available.
 
