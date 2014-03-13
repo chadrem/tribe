@@ -54,7 +54,7 @@ There are three ways to create an actor class:
 
 #### Root
 
-Well designed application organizes its actors in a tree like structure.
+A well designed application organizes its actors in a tree like structure.
 To encourage this, Tribe has a special built-in actor known as the root actor.
 You should use the root actor to spawn all of your application specific actors.
 
