@@ -20,7 +20,7 @@ module Tribe
         end
 
         COUNTERS.times do |i|
-          Tribe.registry["actor_#{rand(ACTOR_COUNT)}"].message!(:do_stuff, MyData.new("data_#{i}"))
+          Tribe.registry["actor_#{rand(ACTOR_COUNT)}"].deliver_message!(:do_stuff, MyData.new("data_#{i}"))
         end
 
         $lock.synchronize do
@@ -61,7 +61,7 @@ module Tribe
         private
         def on_do_stuff(event)
           if event.data.increment
-            Tribe.registry["actor_#{rand(ACTOR_COUNT)}"].message!(:do_stuff, event.data)
+            Tribe.registry["actor_#{rand(ACTOR_COUNT)}"].deliver_message!(:do_stuff, event.data)
           end
         end
 
