@@ -28,7 +28,3 @@ module Tribe
     @root ||= Tribe::Root.new(:name => 'root', :permit_root => true)
   end
 end
-
-# Force initialization.
-Tribe.registry
-Tribe.root
