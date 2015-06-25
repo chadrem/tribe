@@ -69,7 +69,7 @@ You should use the root actor to spawn all of your application specific actors.
 There are two types of methods that you create in your actor classes:
 
 - *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.
-- *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the actor system.
+- *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the actor system.  You must always call ````super```` if you override a system handler.
 
 ## Messages
 
@@ -116,6 +116,7 @@ Since they are fire-and-forget, these methods always return nil.
 
 Registries hold references to named actors so that you can easily find them.
 You don't have to create your own since there is a global one (Tribe.registry).
+The Root actor is named 'root' and stored in the default registry.
 
     actor = Tribe.root.spawn(Tribe::Actor, :name => 'some_actor')
 
@@ -417,7 +418,14 @@ You then have the option to re-spawn the failed actor.
       end
 
       def child_died_handler(actor, exception)
+        super
         puts "My child (#{actor.identifier}) died.  Restarting it."
+        create_subtree
+      end
+
+      def child_shutdown_handler(actor, exception)
+        super
+        puts "My child (#{actor.identifier}) shutdown.  Ignoring it."
         create_subtree
       end
     end
@@ -443,7 +451,7 @@ You then have the option to re-spawn the failed actor.
     end
 
     # Create the top-level actor.
-    top = Tribe.root.spawn(Level1, :name => 'root')
+    top = Tribe.root.spawn(Level1, :name => 'Level1')
 
     # Tell the top-level actor to create the tree of children.
     top.deliver_message!(:spawn)

@@ -12,3 +12,19 @@ task :console do
 
   IRB.start
 end
+
+def foo
+  t = Thread.new do
+    i = 0
+    while i < 100 do
+      1000.times do
+        t = Tribe.root.spawn(Tribe::Actor)
+        t.shutdown!
+        t = nil
+      end
+      puts Time.now
+      i += 1
+    end
+  end
+  t.join
+end

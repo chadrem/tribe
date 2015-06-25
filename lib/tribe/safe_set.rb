@@ -36,5 +36,13 @@ module Tribe
 
       return self
     end
+
+    def clear
+      @mutex.synchronize do
+        @set.clear
+      end
+
+      return nil
+    end
   end
 end

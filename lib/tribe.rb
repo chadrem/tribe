@@ -19,11 +19,6 @@ module Tribe
     return @registry ||= Tribe::Registry.new
   end
 
-  def self.registry=(val)
-    @registry.dispose if @registry
-    @registry = val
-  end
-
   def self.root
     @root ||= Tribe::Root.new(:name => 'root', :permit_root => true)
   end

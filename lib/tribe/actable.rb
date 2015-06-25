@@ -24,6 +24,7 @@ module Tribe
       @_as.scheduler = options[:scheduler]
       @_as.name = options[:name]
       @_as.parent = options[:parent]
+      @_as.children = Tribe::SafeSet.new
 
       @_as.registry.register(self)
     end
@@ -79,7 +80,6 @@ module Tribe
     def spawn(klass, actor_options = {}, spawn_options = {})
       actor_options[:parent] = self
 
-      @_as.children ||= []
       child = nil
 
       if spawn_options[:no_raise_on_failure]
@@ -92,7 +92,7 @@ module Tribe
         child = klass.new(actor_options)
       end
 
-      @_as.children << child
+      @_as.children.add(child)
 
       return child
     end
@@ -107,6 +107,10 @@ module Tribe
 
     def identifier
       return @_as.name ? "#{object_id}:#{@_as.name}" : object_id
+    end
+
+    def exception
+      return @_as.exception
     end
 
     #
@@ -140,16 +144,18 @@ module Tribe
         @_as.parent.deliver_message!(:_child_died, [self, exception])
       end
 
-      if @_as.children
-        @_as.children.each { |c| c.deliver_message!(:_parent_died, [self, exception]) }
-        @_as.children.clear
-        @_as.children = nil
-      end
+      @_as.children.each { |c| c.deliver_message!(:_parent_died, [self, exception]) }
+      @_as.children.clear
+      @_as.children = nil
 
       return nil
     end
 
     def shutdown_handler(event)
+      if @_as.parent
+        @_as.parent.deliver_message!(:_child_shutdown, self)
+      end
+
       return nil
     end
 
@@ -166,7 +172,7 @@ module Tribe
       @_as.registry.unregister(self)
       @_as.timers.each { |t| t.cancel } if @_as.timers
 
-      if @_as.children && exception.nil?
+      if exception.nil?
         @_as.children.each { |c| c.shutdown! }
         @_as.children.clear
         @_as.children = nil
@@ -176,7 +182,12 @@ module Tribe
     end
 
     def child_died_handler(child, exception)
+      @_as.children.delete(child)
       raise Tribe::ActorChildDied.new("#{child.identifier} died.")
+    end
+
+    def child_shutdown_handler(child)
+      @_as.children.delete(child)
     end
 
     def parent_died_handler(parent, exception)
@@ -254,6 +265,8 @@ module Tribe
           perform_handler(event)
         when :_child_died
           child_died_handler(event.data[0], event.data[1])
+        when :_child_shutdown
+          child_shutdown_handler(event.data)
         when :_parent_died
           parent_died_handler(event.data[0], event.data[1])
         else

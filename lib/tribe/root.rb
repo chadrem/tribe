@@ -14,6 +14,10 @@ module Tribe
 
     def child_died_handler(child, exception)
       # Let the children die silently since the root actor should live forever.
+      begin
+        super
+      rescue Tribe::ActorChildDied => e
+      end
     end
   end
 end
