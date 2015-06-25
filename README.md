@@ -66,7 +66,7 @@ You should use the root actor to spawn all of your application specific actors.
 
 #### Handlers
 
-There are two types of methods that you create in your actor classes:
+There are two types of methods that you create in your actor classes to extend or change actor behavior:
 
 - *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.  None of these are included by default.  You define them for your specific needs.
 - *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the actor system.  You must always first call ````super```` if you override a system handler unless you are prepared to handle internal actor state (advanced users only!).
