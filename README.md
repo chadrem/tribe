@@ -247,7 +247,7 @@ The actor won't process any other events until the future has a result.
 #### Timeouts
 
 Futures can be confgured to timeout after a specified number of seconds.
-When a timeout occurs, the result of the future will be a Tribe::FutureTimeout exception.
+When a timeout occurs, the result of the future will be a ````Tribe::FutureTimeout```` exception.
 
     # Manually create a future for this example (Use Actable#future! in your actors).
     future = Tribe::Future.new
@@ -265,9 +265,9 @@ When a timeout occurs, the result of the future will be a Tribe::FutureTimeout e
 
 Below you will find a summary of performance recommendations for futures:
 
-- Use Actable#message! unless you really need Actable#future! since futures have overhead.
-- If you use Actable#future!, prefer the non-blocking API over the blocking one.
-- If you use the blocking API, the actor calling Future#wait should use a dedicated worker thread.  Failure to use a dedicated thread will cause a thread from the shared thread pool to block (thus decreasing the size of the thread pool and risking deadlock:).
+- Use ````message!```` unless you really need ````future!```` since futures have overhead.
+- If you use ````future!````, prefer the non-blocking API over the blocking one.
+- If you use the blocking API, the actor calling ````wait```` should use a dedicated worker thread.  Failure to use a dedicated thread will cause a thread from the shared thread pool to block (thus decreasing the size of the thread pool and risking deadlock:).
 
 ## Forwarding
 
@@ -368,7 +368,7 @@ Both one-shot and periodic timers are provided.
 
 Linking allows actors to group together so that they all live or die together.
 Such linking is useful for breaking up complex problems into multiple smaller units.
-To create a linked actor you use the Actable#spawn method.
+To create a linked actor you use the ````spawn```` method.
 By default, if a linked actor dies, it will cause its parent and children to die too.
 You an override this behavior using by using supervisors.
 
@@ -476,7 +476,7 @@ You then have the option to re-spawn the failed actor.
 #### Important!
 
 Restarting named actors is NOT currently supported, but will be in a future update.
-Attempting to do so may result in Tribe::RegistryError exceptions when trying to spawn a replacement child.
+Attempting to do so may result in ````Tribe::RegistryError```` exceptions when trying to spawn a replacement child.
 
 ## Benchmarks
 
