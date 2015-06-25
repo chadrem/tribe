@@ -416,6 +416,8 @@ You an override this behavior using by using supervisors.
 A failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating.
 You then have the option to re-spawn the failed actor.
+They are created by overriding the behavior of the ````child_died_handler```` method as described below.
+In the future this will be improved by changing ````spawn```` to take a ````:supervise => true```` option.
 
     # Create the top-level actor class.
     class Level1 < Tribe::Actor
