@@ -146,7 +146,6 @@ module Tribe
 
       @_as.children.each { |c| c.deliver_message!(:_parent_died, [self, exception]) }
       @_as.children.clear
-      @_as.children = nil
 
       return nil
     end
@@ -155,6 +154,9 @@ module Tribe
       if @_as.parent
         @_as.parent.deliver_message!(:_child_shutdown, self)
       end
+
+      @_as.children.each { |c| c.shutdown! }
+      @_as.children.clear
 
       return nil
     end
@@ -171,12 +173,6 @@ module Tribe
       @_as.mailbox.kill
       @_as.registry.unregister(self)
       @_as.timers.each { |t| t.cancel } if @_as.timers
-
-      if exception.nil?
-        @_as.children.each { |c| c.shutdown! }
-        @_as.children.clear
-        @_as.children = nil
-      end
 
       return nil
     end

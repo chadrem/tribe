@@ -186,6 +186,8 @@ No waiting for a result is involved and the actor will continue to process other
 
     actor_a.deliver_message!(:start)
 
+    # Shutdown the actors.
+    sleep(3)
     actor_a.shutdown!
     actor_b.shutdown!
 
@@ -262,7 +264,7 @@ Below you will find a summary of performance recommendations for futures:
 
 - Use Actable#message! unless you really need Actable#future! since futures have overhead.
 - If you use Actable#future!, prefer the non-blocking API over the blocking one.
-- If you use the blocking API, the actor calling Future#wait should use a dedicated worker thread.
+- If you use the blocking API, the actor calling Future#wait should use a dedicated worker thread.  Failure to use a dedicated thread will cause a thread from the shared thread pool to block (thus decreasing the size of the thread pool and risking deadlock:).
 
 ## Forwarding
 
@@ -320,6 +322,7 @@ This lets you build routers that delegate work to other actors.
     end
 
     # Shutdown the router.
+    sleep(3)
     router.shutdown!
 
 ## Timers
