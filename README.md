@@ -47,9 +47,9 @@ Or install it yourself as:
 Actors are the building blocks of your application.
 There are three ways to create an actor class:
 
-- Inherit from Tribe::Actor (uses the shared thread pool).
-- Inherit from Tribe::DedicatedActor (uses a dedicated thread).
-- Mixin Tribe::Actable and call the ````init_actable```` in your constructor.
+- Inherit from ````Tribe::Actor```` (uses the shared thread pool).
+- Inherit from ````Tribe::DedicatedActor```` (uses a dedicated thread).
+- Mixin ````Tribe::Actable```` and call the ````init_actable```` in your constructor.
 
 
 #### Root
