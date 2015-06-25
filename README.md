@@ -49,7 +49,7 @@ There are three ways to create an actor class:
 
 - Inherit from Tribe::Actor (uses the shared thread pool).
 - Inherit from Tribe::DedicatedActor (uses a dedicated thread).
-- Mixin Tribe::Actable and call the Actable#init_actable method in your constructor.
+- Mixin Tribe::Actable and call the ````init_actable```` in your constructor.
 
 
 #### Root
@@ -126,7 +126,7 @@ Since messages are fire-and-forget, both of these methods always return ````nil`
 ## Registries
 
 Registries hold references to named actors so that you can easily find them.
-You don't have to create your own since there is a global one (Tribe.registry).
+You don't have to create your own since there is a global one called ````Tribe.registry````.
 The Root actor is named 'root' and stored in the default registry.
 
     actor = Tribe.root.spawn(Tribe::Actor, :name => 'some_actor')
