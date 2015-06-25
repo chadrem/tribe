@@ -418,7 +418,11 @@ You then have the option to re-spawn the failed actor.
       end
 
       def child_died_handler(actor, exception)
-        super
+        begin
+          super
+        rescue Tribe::ActorChildDied => e
+        end
+
         puts "My child (#{actor.identifier}) died.  Restarting it."
         create_subtree
       end
@@ -426,7 +430,6 @@ You then have the option to re-spawn the failed actor.
       def child_shutdown_handler(actor, exception)
         super
         puts "My child (#{actor.identifier}) shutdown.  Ignoring it."
-        create_subtree
       end
     end
 
