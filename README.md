@@ -86,7 +86,7 @@ Messages are the most basic type of communication.  They are sent using using tw
 - ````message!````: This method is used to tell one actor to send another actor a message.  A reference to the source actor is included in the message in case the destination actor wants to respond.  Usually it is used when your actor code wants to message another actor.
 - ````deliver_message!````: This method is used to directly message an actor.  Usually it is used when non-actor code wants to message an actor.
 
-Since messages are fire-and-forget, both of these methods always return nil.
+Since messages are fire-and-forget, both of these methods always return ````nil````.
 
     # Create your custom actor class.
     class MyActor < Tribe::Actor
@@ -139,8 +139,8 @@ The Root actor is named 'root' and stored in the default registry.
 
 Messages are limited in that they are one way (fire-and-forget).
 Many times you'll be interested in receiving a response and this is when futures become useful.
-To send a future you use Actable#future! instead of Actable#message!.
-It will return a future object (instead of nil) that will give you access to the result when it becomes available.
+To send a future you use ````future!```` instead of ````message!````.
+It will return a ````Future```` object (instead of ````nil````) that will give you access to the result when it becomes available.
 
 #### Non-blocking
 
