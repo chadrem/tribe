@@ -69,7 +69,7 @@ You should use the root actor to spawn all of your application specific actors.
 There are two types of methods that you create in your actor classes to extend or change actor behavior:
 
 - *Command handlers* are prefixed with "on_" and define the types of commands your actor will process.  None of these are included by default.  You define them for your specific needs.
-- *System handlers* are postfixed with "_handler" and are built into the actor system.  These are hooks into the actor system.  You must always first call ````super```` if you override a system handler unless you are prepared to handle internal actor state (advanced users only!).
+- *System handlers* are postfixed with "_handler" and are built into the actor system.  You must always first call ````super```` if you override a system handler unless you are prepared to handle internal actor state (advanced users only!).
   - *event_handler*: Default behavior is to route messages to the correct 'on_' (command handler) or '_handler' (system handler).
   - *exception_handler*: Default behavior is to kill itself and tell both children and parent to die.
   - *shutdown_handler*: Default behavior is to shutdown itself and tell children to shutdown.  The parent will be notified of the shutdown also.
