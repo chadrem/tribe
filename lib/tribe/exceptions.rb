@@ -5,6 +5,7 @@ module Tribe
   class ActorNameError < TribeError; end
   class ActorChildDied < TribeError; end
   class ActorParentDied < TribeError; end
+  class ActorReservedCommand < TribeError; end
 
   class FutureError < TribeError; end
   class FutureNoResult < TribeError; end

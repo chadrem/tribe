@@ -16,18 +16,20 @@ module Tribe
       end
 
       @logger = Workers::LogProxy.new(options[:logger])
-      @_as = Tribe::ActorState.new
-      @_as.dedicated = options[:dedicated] || false
-      @_as.pool = @_as.dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
-      @_as.mailbox = Tribe::Mailbox.new(@_as.pool)
-      @_as.registry = options[:registry] || Tribe.registry
-      @_as.scheduler = options[:scheduler]
-      @_as.name = options[:name]
-      @_as.parent = options[:parent]
-      @_as.children = Tribe::SafeSet.new
-      @_as.supervisees = Tribe::SafeSet.new
+      @_actable = Tribe::ActorState.new
+      @_actable.dedicated = options[:dedicated] || false
+      @_actable.pool = @_actable.dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
+      @_actable.mailbox = Tribe::Mailbox.new(@_actable.pool)
+      @_actable.registry = options[:registry] || Tribe.registry
+      @_actable.scheduler = options[:scheduler]
+      @_actable.name = options[:name]
+      @_actable.parent = options[:parent]
+      @_actable.children = Tribe::SafeSet.new
+      @_actable.supervisees = Tribe::SafeSet.new
 
-      @_as.registry.register(self)
+      @_actable.registry.register(self)
+
+      direct_message!(:__initialize__)
     end
 
     #
@@ -40,7 +42,7 @@ module Tribe
     public
 
     def deliver_event!(event)
-      @_as.mailbox.push(event) do
+      @_actable.mailbox.push(event) do
         process_events
       end
 
@@ -71,11 +73,11 @@ module Tribe
     end
 
     def shutdown!
-      return direct_message!(:_shutdown)
+      return direct_message!(:__shutdown__)
     end
 
     def perform!(&block)
-      return direct_message!(:_perform, block)
+      return direct_message!(:__perform__, block)
     end
 
     def spawn(klass, actor_options = {}, spawn_options = {})
@@ -93,29 +95,29 @@ module Tribe
         child = klass.new(actor_options)
       end
 
-      @_as.children.add(child)
+      @_actable.children.add(child)
 
       if spawn_options[:supervise]
-        @_as.supervisees.add(child)
+        @_actable.supervisees.add(child)
       end
 
       return child
     end
 
     def alive?
-      @_as.mailbox.alive?
+      @_actable.mailbox.alive?
     end
 
     def name
-      return @_as.name
+      return @_actable.name
     end
 
     def identifier
-      return @_as.name ? "#{object_id}:#{@_as.name}" : object_id
+      return @_actable.name ? "#{object_id}:#{@_actable.name}" : object_id
     end
 
     def exception
-      return @_as.exception
+      return @_actable.exception
     end
 
     #
@@ -124,6 +126,9 @@ module Tribe
     #
 
     private
+
+    def on_initialize(event)
+    end
 
     def on_exception(event)
     end
@@ -149,7 +154,7 @@ module Tribe
 
     def event_handler(event)
       result = nil
-      @_as.active_event = event
+      @_actable.active_event = event
 
       begin
         result = send("on_#{event.command}", event)
@@ -157,23 +162,27 @@ module Tribe
         result = e
         raise
       ensure
-        if event.future && @_as.active_event
+        if event.future && @_actable.active_event
           event.future.result = result
         end
-        @_as.active_event = nil
+        @_actable.active_event = nil
       end
 
       return nil
     end
 
+    def initialize_handler(event)
+      on_initialize(event)
+    end
+
     def exception_handler(exception)
-      if @_as.parent
-        @_as.parent.direct_message!(:_child_died, [self, exception])
+      if @_actable.parent
+        @_actable.parent.direct_message!(:__child_died__, [self, exception])
       end
 
-      @_as.children.each { |c| c.direct_message!(:_parent_died, [self, exception]) }
-      @_as.children.clear
-      @_as.supervisees.clear
+      @_actable.children.each { |c| c.direct_message!(:__parent_died__, [self, exception]) }
+      @_actable.children.clear
+      @_actable.supervisees.clear
 
       on_exception(Event.new(:exception, {:exception => exception}))
 
@@ -181,13 +190,13 @@ module Tribe
     end
 
     def shutdown_handler(event)
-      if @_as.parent
-        @_as.parent.direct_message!(:_child_shutdown, self)
+      if @_actable.parent
+        @_actable.parent.direct_message!(:__child_shutdown__, self)
       end
 
-      @_as.children.each { |c| c.shutdown! }
-      @_as.children.clear
-      @_as.supervisees.clear
+      @_actable.children.each { |c| c.shutdown! }
+      @_actable.children.clear
+      @_actable.supervisees.clear
 
       on_shutdown(Event.new(:shutdown, {}))
 
@@ -201,18 +210,18 @@ module Tribe
     end
 
     def cleanup_handler(exception = nil)
-      @_as.exception = exception
-      @_as.pool.shutdown if @_as.dedicated
-      @_as.mailbox.kill
-      @_as.registry.unregister(self)
-      @_as.timers.each { |t| t.cancel } if @_as.timers
+      @_actable.exception = exception
+      @_actable.pool.shutdown if @_actable.dedicated
+      @_actable.mailbox.kill
+      @_actable.registry.unregister(self)
+      @_actable.timers.each { |t| t.cancel } if @_actable.timers
 
       return nil
     end
 
     def child_died_handler(child, exception)
-      @_as.children.delete(child)
-      supervising = !!@_as.supervisees.delete?(child)
+      @_actable.children.delete(child)
+      supervising = !!@_actable.supervisees.delete?(child)
 
       on_child_died(Event.new(:child_died, {:child => child, :exception => exception}))
 
@@ -224,8 +233,8 @@ module Tribe
     end
 
     def child_shutdown_handler(child)
-      @_as.children.delete(child)
-      @_as.supervisees.delete(child)
+      @_actable.children.delete(child)
+      @_actable.supervisees.delete(child)
 
       on_child_shutdown(Event.new(:child_shutdown, {:child => child}))
 
@@ -247,42 +256,42 @@ module Tribe
     private
 
     def registry
-      return @_as.registry
+      return @_actable.registry
     end
 
     def pool
-      return @_as.pool
+      return @_actable.pool
     end
 
     def timer(delay, command, data = nil)
       # Lazy instantiation for performance.
-      @_as.scheduler ||= Workers.scheduler
-      @_as.timers ||= Tribe::SafeSet.new
+      @_actable.scheduler ||= Workers.scheduler
+      @_actable.timers ||= Tribe::SafeSet.new
 
-      timer = Workers::Timer.new(delay, :scheduler => @_as.scheduler) do
-        @_as.timers.delete(timer)
+      timer = Workers::Timer.new(delay, :scheduler => @_actable.scheduler) do
+        @_actable.timers.delete(timer)
         direct_message!(command, data)
       end
 
-      @_as.timers.add(timer)
+      @_actable.timers.add(timer)
 
       return timer
     end
 
     def periodic_timer(delay, command, data = nil)
       # Lazy instantiation for performance.
-      @_as.scheduler ||= Workers.scheduler
-      @_as.timers ||= Tribe::SafeSet.new
+      @_actable.scheduler ||= Workers.scheduler
+      @_actable.timers ||= Tribe::SafeSet.new
 
-      timer = Workers::PeriodicTimer.new(delay, :scheduler => @_as.scheduler) do
+      timer = Workers::PeriodicTimer.new(delay, :scheduler => @_actable.scheduler) do
         direct_message!(command, data)
         unless alive?
-          @_as.timers.delete(timer)
+          @_actable.timers.delete(timer)
           timer.cancel
         end
       end
 
-      @_as.timers.add(timer)
+      @_actable.timers.add(timer)
 
       return timer
     end
@@ -293,27 +302,31 @@ module Tribe
     #
 
     def forward!(dest)
-      dest.deliver_event!(@_as.active_event)
-      @_as.active_event = nil
+      dest.deliver_event!(@_actable.active_event)
+      @_actable.active_event = nil
 
       return nil
     end
 
     # All system commands are prefixed with an underscore.
     def process_events
-      while (event = @_as.mailbox.obtain_and_shift)
+      while (event = @_actable.mailbox.obtain_and_shift)
         case event.command
-        when :_shutdown
+        when :__initialize__
+          initialize_handler(event)
+        when :__shutdown__
           cleanup_handler
           shutdown_handler(event)
-        when :_perform
+        when :__perform__
           perform_handler(event)
-        when :_child_died
+        when :__child_died__
           child_died_handler(event.data[0], event.data[1])
-        when :_child_shutdown
+        when :__child_shutdown__
           child_shutdown_handler(event.data)
-        when :_parent_died
+        when :__parent_died__
           parent_died_handler(event.data[0], event.data[1])
+        when :initialize, :shutdown, :perform, :child_died, :child_shutdown, :parent_died
+          raise ActorReservedCommand.new("Reserved commands are not allowed (command=#{event.command}).")
         else
           event_handler(event)
         end
@@ -323,7 +336,7 @@ module Tribe
       cleanup_handler(exception)
       exception_handler(exception)
     ensure
-      @_as.mailbox.release do
+      @_actable.mailbox.release do
         process_events
       end
 
