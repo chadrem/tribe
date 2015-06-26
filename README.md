@@ -6,8 +6,6 @@ Tribe focuses on high performance, low latency, a simple API, and flexibility.
 It's goal is to support at least one million actors running on a small group of threads.
 It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers") gem.
 
-Event-driven servers can be built using [Tribe EM] (https://github.com/chadrem/tribe_em "Tribe EM").
-
 ## Contents
 
 - [Installation](#installation)
@@ -403,7 +401,7 @@ You an override this behavior by using supervisors.
 A failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating.
 You then have the option to re-spawn the failed actor.
-They are created by passing ````{:supervise => true}```` as third argument to ````spawn````.
+They are created by passing ````{:supervise => true}```` as a third argument to ````spawn````.
 You can then detect dead children by overriding ````on_child_died````.
 
     # Create the Parent actor class.
