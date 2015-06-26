@@ -13,36 +13,46 @@ module Tribe
 
     def add(item)
       @mutex.synchronize do
-        @set.add(item)
+        return @set.add(item)
       end
-
-      return self
     end
 
     def delete(item)
       @mutex.synchronize do
-        @set.delete(item)
+        return @set.delete(item)
       end
+    end
 
-      return self
+    def delete?(item)
+      @mutex.synchronize do
+        return @set.delete?(item)
+      end
     end
 
     def each(&block)
       @mutex.synchronize do
-        @set.each do |item|
+        return @set.each do |item|
           yield(item)
         end
       end
-
-      return self
     end
 
     def clear
       @mutex.synchronize do
-        @set.clear
+        return @set.clear
       end
+    end
 
-      return nil
+    def size
+      @mutex.synchronize do
+        return @set.size
+      end
+    end
+
+    def to_a
+      @mutex.synchronize do
+        return @set.to_a
+      end
     end
   end
 end

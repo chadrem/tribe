@@ -416,64 +416,40 @@ You an override this behavior by using supervisors.
 A failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating.
 You then have the option to re-spawn the failed actor.
-They are created by overriding the behavior of the ````child_died_handler```` method as described below.
-In the future this will be improved by changing ````spawn```` to take a ````:supervise => true```` option.
+They are created by passing ````{:supervise => true}```` as third argument to ````spawn````.
+You can then detect dead chldren by overriding the ````child_died_handler````.  As with all system handlers, make sure you call ````super````.
 
-    # Create the top-level actor class.
-    class Level1 < Tribe::Actor
+    # Create the Parent actor class.
+    class Parent < Tribe::Actor
       private
-      def on_spawn(event)
-        5.times do |i|
-          create_subtree
-        end
-      end
-
-      def create_subtree
-        actor = spawn(Level2)
-        message!(actor, :spawn)
-      end
-
       def child_died_handler(actor, exception)
-        begin
-          super
-        rescue Tribe::ActorChildDied => e
-        end
-
-        puts "My child (#{actor.identifier}) died.  Restarting it."
-        create_subtree
-      end
-
-      def child_shutdown_handler(actor, exception)
         super
-        puts "My child (#{actor.identifier}) shutdown.  Ignoring it."
+        puts "My child (#{actor.identifier}) died."
       end
     end
 
-    # Create the mid-level actor class.
-    class Level2 < Tribe::Actor
+    # Create the Child actor class.
+    class Child < Tribe::Actor
       private
-      def on_spawn(event)
-        5.times do |i|
-          actor = spawn(Level3)
-          message!(actor, :spawn)
-        end
-      end
     end
 
-    # Create the bottom level actor class.
-    class Level3 < Tribe::Actor
-      private
-      def on_spawn(event)
-        puts "#{identifier} says hello world!"
-        raise 'Sometimes I like to die.' if rand < 0.5
-      end
-    end
+    # Create the parent actor.
+    parent = Tribe.root.spawn(Parent, {:name => 'Parent'})
 
-    # Create the top-level actor.
-    top = Tribe.root.spawn(Level1, :name => 'Level1')
+    # Create the child actor.
+    child = parent.spawn(Child, {}, {:supervise => true})
 
-    # Tell the top-level actor to create the tree of children.
-    top.direct_message!(:spawn)
+    # Force the child to die by executing an exception
+    child.perform! { raise 'good bye' }
+
+    # Wait for child and parent to run.
+    sleep(3)
+
+    # Check if the child is alive.
+    puts "Child is alive? #{child.alive?}"
+
+    # Check if the parent is alive.
+    puts "Parent is alive? #{parent.alive?}"
 
 #### Important!
 

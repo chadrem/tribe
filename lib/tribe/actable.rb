@@ -25,6 +25,7 @@ module Tribe
       @_as.name = options[:name]
       @_as.parent = options[:parent]
       @_as.children = Tribe::SafeSet.new
+      @_as.supervisees = Tribe::SafeSet.new
 
       @_as.registry.register(self)
     end
@@ -94,6 +95,10 @@ module Tribe
 
       @_as.children.add(child)
 
+      if spawn_options[:supervise]
+        @_as.supervisees.add(child)
+      end
+
       return child
     end
 
@@ -146,6 +151,7 @@ module Tribe
 
       @_as.children.each { |c| c.direct_message!(:_parent_died, [self, exception]) }
       @_as.children.clear
+      @_as.supervisees.clear
 
       return nil
     end
@@ -157,6 +163,7 @@ module Tribe
 
       @_as.children.each { |c| c.shutdown! }
       @_as.children.clear
+      @_as.supervisees.clear
 
       return nil
     end
@@ -179,11 +186,16 @@ module Tribe
 
     def child_died_handler(child, exception)
       @_as.children.delete(child)
-      raise Tribe::ActorChildDied.new("#{child.identifier} died.")
+      supervising = !!@_as.supervisees.delete?(child)
+
+      if !supervising
+        raise Tribe::ActorChildDied.new("#{child.identifier} died.")
+      end
     end
 
     def child_shutdown_handler(child)
       @_as.children.delete(child)
+      @_as.supervisees.delete(child)
     end
 
     def parent_died_handler(parent, exception)

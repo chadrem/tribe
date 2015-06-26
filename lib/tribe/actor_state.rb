@@ -10,6 +10,7 @@ module Tribe
     attr_accessor :active_event
     attr_accessor :parent
     attr_accessor :children
+    attr_accessor :supervisees
     attr_accessor :exception
   end
 end
