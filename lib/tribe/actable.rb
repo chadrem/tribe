@@ -119,8 +119,30 @@ module Tribe
     end
 
     #
-    # Private event handlers.
-    # Notes: These methods are designed to be overriden (make sure you call super).
+    # Private command handlers.
+    # Notes: These methods are designed to be overriden by all users in order to respond to actor system events.
+    #
+
+    private
+
+    def on_exception(event)
+    end
+
+    def on_shutdown(event)
+    end
+
+    def on_child_died(event)
+    end
+
+    def on_child_shutdown(event)
+    end
+
+    def on_parent_died(event)
+    end
+
+    #
+    # Private event system handlers.
+    # Notes: These methods are designed to be overriden by advanced users only.  Overriding is very rare!
     #
 
     private
@@ -153,6 +175,8 @@ module Tribe
       @_as.children.clear
       @_as.supervisees.clear
 
+      on_exception(Event.new(:exception, {:exception => exception}))
+
       return nil
     end
 
@@ -164,6 +188,8 @@ module Tribe
       @_as.children.each { |c| c.shutdown! }
       @_as.children.clear
       @_as.supervisees.clear
+
+      on_shutdown(Event.new(:shutdown, {}))
 
       return nil
     end
@@ -188,18 +214,29 @@ module Tribe
       @_as.children.delete(child)
       supervising = !!@_as.supervisees.delete?(child)
 
+      on_child_died(Event.new(:child_died, {:child => child, :exception => exception}))
+
       if !supervising
         raise Tribe::ActorChildDied.new("#{child.identifier} died.")
       end
+
+      return nil
     end
 
     def child_shutdown_handler(child)
       @_as.children.delete(child)
       @_as.supervisees.delete(child)
+
+      on_child_shutdown(Event.new(:child_shutdown, {:child => child}))
+
+      retur nil
     end
 
     def parent_died_handler(parent, exception)
+      on_parent_died(Event.new(:parent_died, {:parent => parent, :exception => exception}))
       raise Tribe::ActorParentDied.new("#{parent.identifier} died.")
+
+      return nil
     end
 
     #
