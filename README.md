@@ -370,7 +370,7 @@ Linking allows actors to group together so that they all live or die together.
 Such linking is useful for breaking up complex problems into multiple smaller units.
 To create a linked actor you use the ````spawn```` method.
 By default, if a linked actor dies, it will cause its parent and children to die too.
-You an override this behavior using by using supervisors.
+You an override this behavior by using supervisors.
 
     # Create the top-level actor class.
     class Level1 < Tribe::Actor
