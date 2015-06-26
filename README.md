@@ -84,7 +84,7 @@ There are two types of methods that you create in your actor classes to extend o
 Messages are the most basic type of communication.  They are sent using using two methods:
 
 - ````message!````: This method is used to tell one actor to send another actor a message.  A reference to the source actor is included in the message in case the destination actor wants to respond.  Usually it is used when your actor code wants to message another actor.
-- ````deliver_message!````: This method is used to directly message an actor.  Usually it is used when non-actor code wants to message an actor.
+- ````direct_message!````: This method is used to directly message an actor.  Usually it is used when non-actor code wants to message an actor.  No source actor is associated with the message.
 
 Since messages are fire-and-forget, both of these methods always return ````nil````.
 
@@ -114,7 +114,7 @@ Since messages are fire-and-forget, both of these methods always return ````nil`
     # Send an event to each actor.
     100.times do |i|
       actor = Tribe.registry["my_actor_#{i}"]
-      actor.deliver_message!(:my_custom, 'hello world')
+      actor.direct_message!(:my_custom, 'hello world')
     end
 
     # Shutdown the actors.
@@ -187,7 +187,7 @@ No waiting for a result is involved and the actor will continue to process other
     actor_a = Tribe.root.spawn(ActorA, :name => 'actor_a')
     actor_b = Tribe.root.spawn(ActorB, :name => 'actor_b')
 
-    actor_a.deliver_message!(:start)
+    actor_a.direct_message!(:start)
 
     # Shutdown the actors.
     sleep(3)
@@ -239,7 +239,7 @@ The actor won't process any other events until the future has a result.
     actor_a = Tribe.root.spawn(ActorA, :name => 'actor_a')
     actor_b = Tribe.root.spawn(ActorB, :name => 'actor_b')
 
-    actor_a.deliver_message!(:start)
+    actor_a.direct_message!(:start)
 
     actor_a.shutdown!
     actor_b.shutdown!
@@ -321,7 +321,7 @@ This lets you build routers that delegate work to other actors.
 
     # Send an event to the router and it will forward it to a random processor.
     100.times do |i|
-      router.deliver_message!(:process, i)
+      router.direct_message!(:process, i)
     end
 
     # Shutdown the router.
@@ -409,7 +409,7 @@ You an override this behavior by using supervisors.
     top = Tribe.root.spawn(Level1, :name => 'level1')
 
     # Tell the root actor to create the tree of children.
-    top.deliver_message!(:spawn)
+    top.direct_message!(:spawn)
 
 ## Supervisors
 
@@ -473,7 +473,7 @@ In the future this will be improved by changing ````spawn```` to take a ````:sup
     top = Tribe.root.spawn(Level1, :name => 'Level1')
 
     # Tell the top-level actor to create the tree of children.
-    top.deliver_message!(:spawn)
+    top.direct_message!(:spawn)
 
 #### Important!
 

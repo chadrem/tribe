@@ -46,7 +46,7 @@ module Tribe
       return nil
     end
 
-    def deliver_message!(command, data = nil, src = nil)
+    def direct_message!(command, data = nil, src = nil)
       deliver_event!(Tribe::Event.new(command, data, src))
 
       return nil
@@ -70,11 +70,11 @@ module Tribe
     end
 
     def shutdown!
-      return deliver_message!(:_shutdown)
+      return direct_message!(:_shutdown)
     end
 
     def perform!(&block)
-      return deliver_message!(:_perform, block)
+      return direct_message!(:_perform, block)
     end
 
     def spawn(klass, actor_options = {}, spawn_options = {})
@@ -141,10 +141,10 @@ module Tribe
 
     def exception_handler(exception)
       if @_as.parent
-        @_as.parent.deliver_message!(:_child_died, [self, exception])
+        @_as.parent.direct_message!(:_child_died, [self, exception])
       end
 
-      @_as.children.each { |c| c.deliver_message!(:_parent_died, [self, exception]) }
+      @_as.children.each { |c| c.direct_message!(:_parent_died, [self, exception]) }
       @_as.children.clear
 
       return nil
@@ -152,7 +152,7 @@ module Tribe
 
     def shutdown_handler(event)
       if @_as.parent
-        @_as.parent.deliver_message!(:_child_shutdown, self)
+        @_as.parent.direct_message!(:_child_shutdown, self)
       end
 
       @_as.children.each { |c| c.shutdown! }
@@ -212,7 +212,7 @@ module Tribe
 
       timer = Workers::Timer.new(delay, :scheduler => @_as.scheduler) do
         @_as.timers.delete(timer)
-        deliver_message!(command, data)
+        direct_message!(command, data)
       end
 
       @_as.timers.add(timer)
@@ -226,7 +226,7 @@ module Tribe
       @_as.timers ||= Tribe::SafeSet.new
 
       timer = Workers::PeriodicTimer.new(delay, :scheduler => @_as.scheduler) do
-        deliver_message!(command, data)
+        direct_message!(command, data)
         unless alive?
           @_as.timers.delete(timer)
           timer.cancel
