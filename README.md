@@ -424,7 +424,8 @@ You can then detect dead chldren by overriding the ````child_died_handler````.  
       private
       def child_died_handler(actor, exception)
         super
-        puts "My child (#{actor.identifier}) died."
+        puts "My child died.  Creating a new child."
+        $second_child = spawn(Child, {:name => 'Child'}, {:supervise => true})
       end
     end
 
@@ -434,27 +435,25 @@ You can then detect dead chldren by overriding the ````child_died_handler````.  
     end
 
     # Create the parent actor.
-    parent = Tribe.root.spawn(Parent, {:name => 'Parent'})
+    $parent = Tribe.root.spawn(Parent, {:name => 'Parent'})
 
-    # Create the child actor.
-    child = parent.spawn(Child, {}, {:supervise => true})
+    # Create the first child actor.
+    $first_child = $parent.spawn(Child, {:name => 'Child'}, {:supervise => true})
 
-    # Force the child to die by executing an exception
-    child.perform! { raise 'good bye' }
+    # Force the first child to die by executing an exception.
+    $first_child.perform! { raise 'good bye' }
 
-    # Wait for child and parent to run.
+    # Wait for the first child and parent to run.
     sleep(3)
 
-    # Check if the child is alive.
-    puts "Child is alive? #{child.alive?}"
-
     # Check if the parent is alive.
-    puts "Parent is alive? #{parent.alive?}"
+    puts "Parent is alive? #{$parent.alive?}"
 
-#### Important!
+    # Check if the first child is alive.
+    puts "First child is alive? #{$first_child.alive?}"
 
-Restarting named actors is NOT currently supported, but will be in a future update.
-Attempting to do so may result in ````Tribe::RegistryError```` exceptions when trying to spawn a replacement child.
+    # Check if the second child is alive.
+    puts "Second child is alive? #{$second_child.alive?}"
 
 ## Benchmarks
 
