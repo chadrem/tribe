@@ -72,12 +72,12 @@ They accept one argument, an instance of ````Tribe::Event```` that shouuld alway
 
 A few command handlers are built into every actor to handle system specific events.  They are:
 
-- ````on_initialize```` This handler takes the place of Ruby's ````initialize````.  It is the first event processsed by all actors.
-- ````on_exception```` This handler will be called whenever an exception occurs.  You can access the exception through ````event.data```` in case you want to print it, log it, etc.  An exception inside of an actor will result in that actor's death.
-- ````on_shutdown```` This handler will be called whenever an actor is asked to shutdown cleanly.
-- ````on_child_died```` This handler gives an actor a chance to spawn a replacement child.  You can access a reference to the child through ````event.data````.  If the actor is a supervisor, it will continue to live otherwise it will die too.
-- ````on_child_shutdown```` This handler is similar to ````on_child_died````, but for when a child is shutdown cleanly.
-- ````on_parent_died```` This handler is also similar to ````on_child_died```` except for the parent actor.  Child actors die when their parent dies.
+- ````on_initialize````: This handler takes the place of Ruby's ````initialize````.  It is the first event processsed by all actors.
+- ````on_exception````: This handler will be called whenever an exception occurs.  You can access the exception through ````event.data```` in case you want to print it, log it, etc.  An exception inside of an actor will result in that actor's death.
+- ````on_shutdown````: This handler will be called whenever an actor is asked to shutdown cleanly.
+- ````on_child_died````: This handler gives an actor a chance to spawn a replacement child.  You can access a reference to the child through ````event.data````.  If the actor is a supervisor, it will continue to live otherwise it will die too.
+- ````on_child_shutdown````: This handler is similar to ````on_child_died````, but for when a child is shutdown cleanly.
+- ````on_parent_died````: This handler is also similar to ````on_child_died```` except for the parent actor.  Child actors die when their parent dies.
 
 You should never call the built in command handlers yourself.
 They are reserved for the actor system and calling them yourself could result in unexpected behavior.
