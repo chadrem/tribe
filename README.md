@@ -480,7 +480,7 @@ An actor's ````wait```` method (used with futures) already calls ````blocking```
 If for some reason Ruby can't create a new thread, Ruby will raise a ````ThreadError```` and your actor will die.
 Most modern operating systems can support many thousands of simultanous threads so refer to your operating system documentation as you may need to increase the limits.
 
-To support in the 10s of thousands, hundreds of thousands, or potentially millions of actors, you will need to use non-blocking actors.
+To support in the tens of thousands, hundreds of thousands, or potentially millions of actors, you will need to use non-blocking actors.
 
     class MyActor < Tribe::Actor
     private
