@@ -466,7 +466,7 @@ Thus it is best to limit the use of ````on_exception```` to logging exceptions i
 ## Blocking code
 
 Occassionally you will have a need to execute blocking code in one of your actors.
-The most common cases of blocking code are network IO, disk IO, database queries, and the sleep function.
+The most common cases of blocking code are network IO, disk IO, database queries, and the ````sleep```` function.
 
 Actors have a convenient method named ````blocking```` that you should use to wrap such code.
 Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
