@@ -453,7 +453,8 @@ You can then detect dead children by overriding ````on_child_died````.
     actor = Tribe::Actor.new
     actor.perform! { raise 'goodbye' }
     sleep(3)
-    puts "#{actor.exception.class.name}: #{actor.exception.message}:\n#{actor.exception.backtrace.join("\n")}"
+    e = actor.exception
+    puts "#{e.class.name}: #{e.message}:\n#{e.backtrace.join("\n")}"
 
 #### Logging exceptions
 
