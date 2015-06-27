@@ -276,7 +276,7 @@ Below you will find a summary of performance recommendations for futures:
 
 - Use ````message!```` unless you really need ````future!```` since futures have overhead.
 - If you use ````future!````, prefer the non-blocking API over the blocking one.
-- If you use the ````future!```` with the blocking API, the actor calling ````wait```` will create a temporary thread.  Since threads are a a finite resource, you should be careful to not create more of them than your operating system can simultaneously support.  There is no such concern with the non-blocking API.
+- If you use ````future!```` with the blocking API, the actor calling ````wait```` will create a temporary thread.  Since threads are a a finite resource, you should be careful to not create more of them than your operating system can simultaneously support.  There is no such concern with the non-blocking API.
 
 ## Forwarding
 
