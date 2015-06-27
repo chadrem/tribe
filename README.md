@@ -443,13 +443,13 @@ You can then detect dead children by overriding ````on_child_died````.
 
 ## Debugging
 
-  Tribe is written in pure Ruby so it will work with all existing debuggers that support Ruby & threads.
-  [Byebug] (https://github.com/deivid-rodriguez/byebug) is commonly used with MRI Ruby 2.X and will let you set breakpoints.
+Tribe is written in pure Ruby so it will work with all existing debuggers that support Ruby & threads.
+[Byebug] (https://github.com/deivid-rodriguez/byebug) is commonly used with MRI Ruby 2.X and will let you set breakpoints.
 
 #### Accessing an actor's exception
 
-  The most common problem you will encounter with actors is that they die due to exceptions.
-  You can access the exception that caused an actor to die by calling the ````exception```` method on the actor:
+The most common problem you will encounter with actors is that they die due to exceptions.
+You can access the exception that caused an actor to die by calling the ````exception```` method on the actor:
 
     actor = Tribe::Actor.new
     actor.perform! { raise 'goodbye' }
@@ -459,8 +459,8 @@ You can then detect dead children by overriding ````on_child_died````.
 
 #### Logging exceptions
 
-  It is common practice to log actor exceptions or print them to stdout.
-  This is easily accomplished with the ````on_exception```` handler in a base class:
+It is common practice to log actor exceptions or print them to stdout.
+This is easily accomplished with the ````on_exception```` handler in a base class:
 
     class MyBaseActor < Tribe::Actor
     private
@@ -476,18 +476,25 @@ You can then detect dead children by overriding ````on_child_died````.
     actor = Tribe.root.spawn(CustomActor)
     actor.perform! { raise 'goodbye' }
 
-  Note that you should be careful to make sure ````on_exception```` never raises an exception itself.
-  If it does, this second exception will be ignored.
-  Thus it is best to limit the use of ````on_exception```` to logging exceptions in a common base class.
+Note that you should be careful to make sure ````on_exception```` never raises an exception itself.
+If it does, this second exception will be ignored.
+Thus it is best to limit the use of ````on_exception```` to logging exceptions in a common base class.
 
 ## Benchmarks
 
-  Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
+Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
 
 ## Blocking code
 
-  Occassionally you will have a need to execute blocking code in one of your actors.
-  Actors have a convenient method named ````blocking```` that you should use to wrap a block of blocking code.
+Occassionally you will have a need to execute blocking code in one of your actors.
+Actors have a convenient method named ````blocking```` that you should use to wrap a block of blocking code.
+
+- Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
+- The most common cases of blocking code are network IO, disk IO, database queries, and the ````sleep```` function.
+- This method will ensure that the thread pool will always have an available thread and thus prevent deadlock.
+- Note that an actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
+- The ````blocking```` method is designed to work with dedicated and non-dedicated actors.  By using this method in all of your actors you will make it easy to convert between dedicated and non-dedicated actors if you ever need to.
+
 
     class MyActor < Tribe::Actor
     private
