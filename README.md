@@ -489,27 +489,27 @@ To support in the tens of thousands, hundreds of thousands, or potentially milli
           sleep 6
         end
       end
-    
+
     end
-    
+
     # Print the default pool size.
     puts "Pool size (before): #{Workers.pool.size}"
-    
+
     # Spawn some actors that go to sleep for a bit.
     100.times do
       actor = Tribe.root.spawn(MyActor)
       actor.direct_message!(:start)
     end
-    
+
     # Wait for all of the actors to sleep.
     sleep(2)
-    
+
     # The pool size is increased by 100 threads.
     puts "Pool size (during): #{Workers.pool.size}"
-    
+
     # Wait for all of the actors to stop sleeping.
     sleep(10)
-    
+
     # The pool size is back to the default size.
     puts "Pool size (after): #{Workers.pool.size}"
 
@@ -533,8 +533,4 @@ Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance 
 
 ## Contributing
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+Bug reports and pull requests are welcome on GitHub at https://github.com/chadrem/tribe.

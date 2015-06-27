@@ -1,30 +1,10 @@
 require "bundler/gem_tasks"
+require "rake/testtask"
 
-desc 'Start an IRB console with Workers loaded'
-task :console do
-  $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), 'lib'))
-
-  require 'tribe'
-  require 'tribe/benchmark'
-  require 'irb'
-
-  ARGV.clear
-
-  IRB.start
+Rake::TestTask.new(:test) do |t|
+  t.libs << "test"
+  t.libs << "lib"
+  t.test_files = FileList['test/**/*_test.rb']
 end
 
-def foo
-  t = Thread.new do
-    i = 0
-    while i < 100 do
-      1000.times do
-        t = Tribe.root.spawn(Tribe::Actor)
-        t.shutdown!
-        t = nil
-      end
-      puts Time.now
-      i += 1
-    end
-  end
-  t.join
-end
+task :default => :test

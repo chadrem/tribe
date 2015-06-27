@@ -1,19 +1,26 @@
-# -*- encoding: utf-8 -*-
-require File.expand_path('../lib/tribe/version', __FILE__)
+# coding: utf-8
+lib = File.expand_path("../lib", __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require "tribe/version"
 
-Gem::Specification.new do |gem|
-  gem.authors       = ["Chad Remesch"]
-  gem.email         = ["chad@remesch.com"]
-  gem.description   = %q{Tribe is a Ruby gem that implements event-driven actors.}
-  gem.summary       = %q{Actors are lightweight concurrent objects that use asynchronous message passing for communication. Tribe focuses on high performance, low latency, an easy to use API, and flexibility.}
-  gem.homepage      = "https://github.com/chadrem/tribe"
+Gem::Specification.new do |spec|
+  spec.name          = "tribe"
+  spec.version       = Tribe::VERSION
+  spec.authors       = ["Chad Remesch"]
+  spec.email         = ["chad@remesch.com"]
 
-  gem.files         = `git ls-files`.split($\)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.name          = "tribe"
-  gem.require_paths = ["lib"]
-  gem.version       = Tribe::VERSION
+  spec.summary       = %q{Actors based concurrency library for Ruby.}
+  spec.homepage      = "https://github.com/chadrem/tribe"
+  spec.license       = "MIT"
 
-  gem.add_dependency('workers', '0.2.2')
+  spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
+  spec.bindir        = "exe"
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.require_paths = ["lib"]
+
+  spec.add_dependency "workers", "~> 0.2"
+
+  spec.add_development_dependency "bundler", "~> 1.10"
+  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "minitest"
 end

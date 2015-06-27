@@ -2,6 +2,7 @@ require 'set'
 
 require 'workers'
 
+require 'tribe/version'
 require 'tribe/safe_set'
 require 'tribe/exceptions'
 require 'tribe/event'
