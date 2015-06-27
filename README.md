@@ -23,9 +23,9 @@ It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers
 - [Timers](#timers)
 - [Linking](#linking)
 - [Supervisors](#supervisors)
+- [Blocking code](#blocking-code)
 - [Debugging](#debugging)
 - [Benchmarks](#benchmarks)
-- [Blocking code](#blocking-code)
 - [Contributing](#contributing)
 
 ## Installation
@@ -441,22 +441,6 @@ You can then detect dead children by overriding ````on_child_died````.
     # Check if the second child is alive.
     puts "Second child is alive? #{$second_child.alive?}"
 
-## Debugging
-
-Tribe is written in pure Ruby so it will work with all existing debuggers that support Ruby & threads.
-[Byebug] (https://github.com/deivid-rodriguez/byebug) is commonly used with MRI Ruby 2.X and will let you set breakpoints.
-
-#### Accessing an actor's exception
-
-The most common problem you will encounter with actors is that they die due to exceptions.
-You can access the exception that caused an actor to die by calling the ````exception```` method on the actor:
-
-    actor = Tribe::Actor.new
-    actor.perform! { raise 'goodbye' }
-    sleep(3)
-    e = actor.exception
-    puts "#{e.class.name}: #{e.message}:\n#{e.backtrace.join("\n")}"
-
 #### Logging exceptions
 
 It is common practice to log actor exceptions or print them to stdout.
@@ -480,9 +464,6 @@ Note that you should be careful to make sure ````on_exception```` never raises a
 If it does, this second exception will be ignored.
 Thus it is best to limit the use of ````on_exception```` to logging exceptions in a common base class.
 
-## Benchmarks
-
-Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
 
 ## Blocking code
 
@@ -494,7 +475,6 @@ Actors have a convenient method named ````blocking```` that you should use to wr
 - This method will ensure that the thread pool will always have an available thread and thus prevent deadlock.
 - Note that an actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
 - The ````blocking```` method is designed to work with dedicated and non-dedicated actors.  By using this method in all of your actors you will make it easy to convert between dedicated and non-dedicated actors if you ever need to.
-
 
     class MyActor < Tribe::Actor
     private
@@ -526,6 +506,27 @@ Actors have a convenient method named ````blocking```` that you should use to wr
     
     # The pool size is back to the default size.
     puts "Pool size (after): #{Workers.pool.size}"
+
+
+## Debugging
+
+Tribe is written in pure Ruby so it will work with all existing debuggers that support Ruby & threads.
+[Byebug] (https://github.com/deivid-rodriguez/byebug) is commonly used with MRI Ruby 2.X and will let you set breakpoints.
+
+#### Accessing an actor's exception
+
+The most common problem you will encounter with actors is that they die due to exceptions.
+You can access the exception that caused an actor to die by calling the ````exception```` method on the actor:
+
+    actor = Tribe::Actor.new
+    actor.perform! { raise 'goodbye' }
+    sleep(3)
+    e = actor.exception
+    puts "#{e.class.name}: #{e.message}:\n#{e.backtrace.join("\n")}"
+    
+## Benchmarks
+
+Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
 
 ## Contributing
 
