@@ -474,9 +474,9 @@ You can then detect dead children by overriding ````on_child_died````.
     actor = Tribe.root.spawn(CustomActor)
     actor.perform! { raise 'goodbye' }
 
-    Note that you should be careful to make sure ````on_exception```` never raises an exception itself.
-    If it does, this second exception will be ignored.
-    Thus it is best to limit the use of ````on_exception```` to logging exceptions in a common base class.
+  Note that you should be careful to make sure ````on_exception```` never raises an exception itself.
+  If it does, this second exception will be ignored.
+  Thus it is best to limit the use of ````on_exception```` to logging exceptions in a common base class.
 
 ## Benchmarks
 
