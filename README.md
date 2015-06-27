@@ -473,8 +473,8 @@ Under the hood this method is expanding and contracting the thread pool to compe
 This will prevent deadlock due to thread pool starvation.
 
 The ````blocking```` method is designed to work with dedicated and non-dedicated actors.
-By using this method in all of your actors, you will make it easy to convert between dedicated and non-dedicated actors versions.
-Note that an actor's wait method (used with futures) already calls blocking for you.
+By using this method in all of your actors, you will make it easy to convert between the two types.
+Note that an actor's wait method (used with futures) already does this for you.
 
     class MyActor < Tribe::Actor
     private
