@@ -468,11 +468,11 @@ Thus it is best to limit the use of ````on_exception```` to logging exceptions i
 Occassionally you will have a need to execute blocking code in one of your actors.
 Actors have a convenient method named ````blocking```` that you should use to wrap a block of blocking code.
 
-- Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
-- The most common cases of blocking code are network IO, disk IO, database queries, and the sleep function.
-- This method will ensure that the thread pool will always have an available thread and thus prevent deadlock.
-- Note that an actor's wait method (used with futures) already calls blocking for you.
-- The blocking method is designed to work with dedicated and non-dedicated actors.  By using this method in all of your actors you will make it easy to convert between dedicated and non-dedicated actors if you ever need to.
+Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
+The most common cases of blocking code are network IO, disk IO, database queries, and the sleep function.
+This method will ensure that the thread pool will always have an available thread and thus prevent deadlock.
+Note that an actor's wait method (used with futures) already calls blocking for you.
+The blocking method is designed to work with dedicated and non-dedicated actors.  By using this method in all of your actors you will make it easy to convert between dedicated and non-dedicated actors if you ever need to.
 
     class MyActor < Tribe::Actor
     private
