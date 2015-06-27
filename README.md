@@ -141,7 +141,7 @@ Many times you'll be interested in receiving a response and this is when futures
 To send a future you use ````future!```` instead of ````message!````.
 It will return a ````Future```` object (instead of ````nil````) that will give you access to the result when it becomes available.
 
-#### Non-blocking
+#### Non-blocking API
 
 Non-blocking futures are asynchronous and use callbacks.
 No waiting for a result is involved and the actor will continue to process other events.
@@ -187,7 +187,7 @@ No waiting for a result is involved and the actor will continue to process other
     actor_a.shutdown!
     actor_b.shutdown!
 
-#### Blocking
+#### Blocking API
 
 Blocking futures are synchronous.
 The actor won't process any other events until the future has a result.
@@ -198,7 +198,7 @@ The actor won't process any other events until the future has a result.
         friend = registry['actor_b']
         future = future!(friend, :compute, 10)
 
-        future.wait # The current thread will sleep until a result is available.
+        wait(future) # The current thread will sleep until a result is available.
 
         if future.success?
           puts "ActorA (#{identifier}) future result: #{future.result}"
@@ -242,7 +242,7 @@ When a timeout occurs, the result of the future will be a ````Tribe::FutureTimeo
         future = future!(friend, :compute, 10)
         future.timeout = 2
 
-        future.wait # The current thread will sleep until a result is available.
+        wait(future) # The current thread will sleep until a result is available.
 
         if future.success?
           puts "ActorA (#{identifier}) future result: #{future.result}"
@@ -276,7 +276,7 @@ Below you will find a summary of performance recommendations for futures:
 
 - Use ````message!```` unless you really need ````future!```` since futures have overhead.
 - If you use ````future!````, prefer the non-blocking API over the blocking one.
-- If you use the blocking API, the actor calling ````wait```` should use a dedicated worker thread.  Failure to use a dedicated thread will cause a thread from the shared thread pool to block (thus decreasing the size of the thread pool and risking deadlock:).
+- If you use the blocking API, the actor calling ````wait```` will create a temporary thread.  Since threads are a a finite resource, you should be careful to not create more of them than your operating system can simultaneously support.  There is no such concern with the non-blocking API.
 
 ## Forwarding
 
@@ -482,6 +482,48 @@ You can then detect dead children by overriding ````on_child_died````.
 ## Benchmarks
 
   Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
+
+## Blocking code
+
+  Occassionally you will have a need to execute blocking code in one of your actors.
+  Actors have a convenient method named ````blocking```` that you should use to wrap a block of blocking code.
+
+  - Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
+  - The most common cases of blocking code are network IO, disk IO, database queries, and the ````sleep```` function.
+  - By using the ````blocking```` method you will ensure that the thread pool will always have an available thread and thus prevent deadlock.
+  - Note that an actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
+  - The ````blocking```` method is designed to work with dedicated and non-dedicated actors.  By using this method in all of your actors you will make it easy to convert between dedicated and non-dedicated actors if you ever need to.
+
+    class MyActor < Tribe::Actor
+    private
+      def on_start(event)
+        blocking do
+          sleep 6
+        end
+      end
+
+    end
+
+    # Print the default pool size.
+    puts "Pool size (before): #{Workers.pool.size}"
+
+    # Spawn some actors that go to sleep for a bit.
+    100.times do
+      actor = Tribe.root.spawn(MyActor)
+      actor.direct_message!(:start)
+    end
+
+    # Wait for all of the actors to sleep.
+    sleep(2)
+
+    # The pool size is increased by 100 threads.
+    puts "Pool size (during): #{Workers.pool.size}"
+
+    # Wait for all of the actors to stop sleeping.
+    sleep(10)
+
+    # The pool size is back to the default size.
+    puts "Pool size (after): #{Workers.pool.size}"
 
 ## Contributing
 

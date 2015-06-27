@@ -120,9 +120,17 @@ module Tribe
       return @_actable.exception
     end
 
+    def registry
+      return @_actable.registry
+    end
+
+    def pool
+      return @_actable.pool
+    end
+
     #
     # Private command handlers.
-    # Notes: These methods are designed to be overriden by all users in order to respond to actor system events.
+    # Notes: These methods are designed to be overriden in order to respond to actor system events.
     #
 
     private
@@ -146,11 +154,46 @@ module Tribe
     end
 
     #
-    # Private event system handlers.
+    # Private event system methods.
     # Notes: These methods are designed to be overriden by advanced users only.  Overriding is very rare!
     #
 
     private
+
+    # All system commands are prefixed with an underscore.
+    def process_events
+      while (event = @_actable.mailbox.obtain_and_shift)
+        case event.command
+        when :__initialize__
+          initialize_handler(event)
+        when :__shutdown__
+          cleanup_handler
+          shutdown_handler(event)
+        when :__perform__
+          perform_handler(event)
+        when :__child_died__
+          child_died_handler(event.data[0], event.data[1])
+        when :__child_shutdown__
+          child_shutdown_handler(event.data)
+        when :__parent_died__
+          parent_died_handler(event.data[0], event.data[1])
+        when :initialize, :shutdown, :perform, :child_died, :child_shutdown, :parent_died
+          raise ActorReservedCommand.new("Reserved commands are not allowed (command=#{event.command}).")
+        else
+          event_handler(event)
+        end
+      end
+
+    rescue Exception => exception
+      cleanup_handler(exception)
+      exception_handler(exception)
+    ensure
+      @_actable.mailbox.release do
+        process_events
+      end
+
+      return nil
+    end
 
     def event_handler(event)
       result = nil
@@ -255,14 +298,6 @@ module Tribe
 
     private
 
-    def registry
-      return @_actable.registry
-    end
-
-    def pool
-      return @_actable.pool
-    end
-
     def timer(delay, command, data = nil)
       # Lazy instantiation for performance.
       @_actable.scheduler ||= Workers.scheduler
@@ -296,11 +331,6 @@ module Tribe
       return timer
     end
 
-    #
-    # Private internal methods.
-    # Notes: These are used by the actor system and you should never call them directly.
-    #
-
     def forward!(dest)
       dest.deliver_event!(@_actable.active_event)
       @_actable.active_event = nil
@@ -308,39 +338,26 @@ module Tribe
       return nil
     end
 
-    # All system commands are prefixed with an underscore.
-    def process_events
-      while (event = @_actable.mailbox.obtain_and_shift)
-        case event.command
-        when :__initialize__
-          initialize_handler(event)
-        when :__shutdown__
-          cleanup_handler
-          shutdown_handler(event)
-        when :__perform__
-          perform_handler(event)
-        when :__child_died__
-          child_died_handler(event.data[0], event.data[1])
-        when :__child_shutdown__
-          child_shutdown_handler(event.data)
-        when :__parent_died__
-          parent_died_handler(event.data[0], event.data[1])
-        when :initialize, :shutdown, :perform, :child_died, :child_shutdown, :parent_died
-          raise ActorReservedCommand.new("Reserved commands are not allowed (command=#{event.command}).")
-        else
-          event_handler(event)
+    # Wrap blocking code using this method to automatically expand/contract the pool.
+    # This way you avoid potential deadlock with blocking code.
+    # Not needed for dedicated actors since they already have their own thread.
+    def blocking
+      if @_actable.dedicated
+        yield
+      else
+        pool.expand(1)
+        begin
+          yield
+        ensure
+          pool.contract(1)
         end
       end
+    end
 
-    rescue Exception => exception
-      cleanup_handler(exception)
-      exception_handler(exception)
-    ensure
-      @_actable.mailbox.release do
-        process_events
+    def wait(future)
+      blocking do
+        future.wait
       end
-
-      return nil
     end
   end
 end
