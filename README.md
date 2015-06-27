@@ -23,6 +23,7 @@ It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers
 - [Timers](#timers)
 - [Linking](#linking)
 - [Supervisors](#supervisors)
+- [Debugging](#debugging)
 - [Benchmarks](#benchmarks)
 - [Contributing](#contributing)
 
@@ -441,7 +442,8 @@ You can then detect dead children by overriding ````on_child_died````.
 
 ## Debugging
 
-  Tribe is pure Ruby so it will work with all existing debuggers that support Ruby & threads.
+  Tribe is written in pure Ruby so it will work with all existing debuggers that support Ruby & threads.
+  [Byebug] (https://github.com/deivid-rodriguez/byebug) is commonly used with MRI Ruby 2.X and will let you set breakpoints.
 
 #### Accessing an actor's exception
 
