@@ -475,7 +475,12 @@ This will prevent deadlock due to thread pool starvation.
 The ````blocking```` method is designed to work with dedicated and non-dedicated actors.
 By using this method in all of your actors, you will make it easy to convert between the two types.
 
-Note that an actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
+An actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
+
+If for some reason Ruby can't create a new thread, Ruby will raise a ````ThreadError```` and your actor will die.
+Most modern operating systems can support many thousands of simultanous threads so refer to your operating system documentation as you may need to increase the limits.
+
+To support in the 10s of thousands, hundreds of thousands, or potentially millions of actors, you will need to use non-blocking actors.
 
     class MyActor < Tribe::Actor
     private
