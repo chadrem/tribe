@@ -51,7 +51,6 @@ There are three ways to create an actor class:
 - Inherit from ````Tribe::DedicatedActor```` (uses a dedicated thread).
 - Mixin ````Tribe::Actable```` and call the ````init_actable```` in your constructor.
 
-
 #### Root
 
 A well designed application organizes its actors in a tree like structure.
@@ -464,17 +463,10 @@ Note that you should be careful to make sure ````on_exception```` never raises a
 If it does, this second exception will be ignored.
 Thus it is best to limit the use of ````on_exception```` to logging exceptions in a common base class.
 
-
 ## Blocking code
 
 Occassionally you will have a need to execute blocking code in one of your actors.
 Actors have a convenient method named ````blocking```` that you should use to wrap a block of blocking code.
-
-- Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
-- The most common cases of blocking code are network IO, disk IO, database queries, and the ````sleep```` function.
-- This method will ensure that the thread pool will always have an available thread and thus prevent deadlock.
-- Note that an actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
-- The ````blocking```` method is designed to work with dedicated and non-dedicated actors.  By using this method in all of your actors you will make it easy to convert between dedicated and non-dedicated actors if you ever need to.
 
     class MyActor < Tribe::Actor
     private
@@ -507,7 +499,6 @@ Actors have a convenient method named ````blocking```` that you should use to wr
     # The pool size is back to the default size.
     puts "Pool size (after): #{Workers.pool.size}"
 
-
 ## Debugging
 
 Tribe is written in pure Ruby so it will work with all existing debuggers that support Ruby & threads.
@@ -523,7 +514,7 @@ You can access the exception that caused an actor to die by calling the ````exce
     sleep(3)
     e = actor.exception
     puts "#{e.class.name}: #{e.message}:\n#{e.backtrace.join("\n")}"
-    
+
 ## Benchmarks
 
 Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
