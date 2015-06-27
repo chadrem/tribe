@@ -79,7 +79,7 @@ A few command handlers are built into every actor to handle system specific even
 - ````on_child_shutdown```` This handler is similar to ````on_child_died````, but for when a child is shutdown cleanly.
 - ````on_parent_died```` This handler is also similar to ````on_child_died```` except for the parent actor.  Child actors die when their parent dies.
 
-You should never call the build in command handlers yourself.
+You should never call the built in command handlers yourself.
 They are reserved for the actor system and calling them yourself could result in unexpected behavior.
 
 ## Messages
