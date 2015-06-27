@@ -490,7 +490,7 @@ You can then detect dead children by overriding ````on_child_died````.
 
   - Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
   - The most common cases of blocking code are network IO, disk IO, database queries, and the ````sleep```` function.
-  - By using the ````blocking```` method you will ensure that the thread pool will always have an available thread and thus prevent deadlock.
+  - This method will ensure that the thread pool will always have an available thread and thus prevent deadlock.
   - Note that an actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
   - The ````blocking```` method is designed to work with dedicated and non-dedicated actors.  By using this method in all of your actors you will make it easy to convert between dedicated and non-dedicated actors if you ever need to.
 
@@ -501,27 +501,27 @@ You can then detect dead children by overriding ````on_child_died````.
           sleep 6
         end
       end
-
+    
     end
-
+    
     # Print the default pool size.
     puts "Pool size (before): #{Workers.pool.size}"
-
+    
     # Spawn some actors that go to sleep for a bit.
     100.times do
       actor = Tribe.root.spawn(MyActor)
       actor.direct_message!(:start)
     end
-
+    
     # Wait for all of the actors to sleep.
     sleep(2)
-
+    
     # The pool size is increased by 100 threads.
     puts "Pool size (during): #{Workers.pool.size}"
-
+    
     # Wait for all of the actors to stop sleeping.
     sleep(10)
-
+    
     # The pool size is back to the default size.
     puts "Pool size (after): #{Workers.pool.size}"
 
