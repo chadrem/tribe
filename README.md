@@ -470,7 +470,7 @@ The most common cases of blocking code are network IO, disk IO, database queries
 
 Actors have a convenient method named ````blocking```` that you should use to wrap such code.
 Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
-This will prevent deadlock due to thread pool starvation.
+This will prevent thread pool starvation.
 
 The ````blocking```` method is designed to work with dedicated and non-dedicated actors.
 By using this method in all of your actors, you will make it easy to convert between the two types.
