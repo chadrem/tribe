@@ -65,8 +65,8 @@ module Tribe
           end
         end
 
-        def exception_handler(e)
-          puts concat_e("MyActor (#{identifier}) died.", e)
+        def on_exception(event)
+          puts concat_e("MyActor (#{identifier}) died.", event.data)
         end
       end
     end

@@ -1,4 +1,7 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in tribe.gemspec
+gem 'coveralls', :require => false
+
 gemspec
+
+gem 'workers', :git => 'https://github.com/chadrem/workers.git'
