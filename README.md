@@ -1,4 +1,4 @@
-# Tribe
+# Tribe [![Build Status](https://travis-ci.org/chadrem/tribe.svg)](https://travis-ci.org/chadrem/tribe) [![Coverage Status](https://coveralls.io/repos/chadrem/tribe/badge.svg?branch=master&service=github)](https://coveralls.io/github/chadrem/tribe?branch=master)
 
 Tribe is a Ruby gem that implements the [actor model] (http://en.wikipedia.org/wiki/Actor_model "actors") in an event-driven way.
 
