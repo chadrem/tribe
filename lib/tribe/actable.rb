@@ -285,7 +285,7 @@ module Tribe
 
       on_child_shutdown(Event.new(:child_shutdown, {:child => child}))
 
-      retur nil
+      return nil
     end
 
     def parent_died_handler(parent, exception)

@@ -1,5 +1,5 @@
 module Tribe
-  class Root < Tribe::Actor
+  class Root < Tribe::DedicatedActor
     private
 
     def initialize(options = {})
