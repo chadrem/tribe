@@ -1,13 +1,13 @@
 GIT
   remote: https://github.com/chadrem/workers.git
-  revision: eeabc74d33a9e216cdb234dbaa5c43906251f1fc
+  revision: 84428e9a9e6e224364e1e6da3a8d476dbe408e5a
   specs:
     workers (0.4.0)
 
 PATH
   remote: .
   specs:
-    tribe (0.5.0)
+    tribe (0.6.0)
       workers (~> 0.4)
 
 GEM

@@ -163,25 +163,7 @@ module Tribe
     # All system commands are prefixed with an underscore.
     def process_events
       while (event = @_actable.mailbox.obtain_and_shift)
-        case event.command
-        when :__initialize__
-          initialize_handler(event)
-        when :__shutdown__
-          cleanup_handler
-          shutdown_handler(event)
-        when :__perform__
-          perform_handler(event)
-        when :__child_died__
-          child_died_handler(event.data[0], event.data[1])
-        when :__child_shutdown__
-          child_shutdown_handler(event.data)
-        when :__parent_died__
-          parent_died_handler(event.data[0], event.data[1])
-        when :initialize, :shutdown, :perform, :child_died, :child_shutdown, :parent_died
-          raise ActorReservedCommand.new("Reserved commands are not allowed (command=#{event.command}).")
-        else
-          event_handler(event)
-        end
+        event_handler(event)
       end
 
     rescue Exception => exception
@@ -196,6 +178,28 @@ module Tribe
     end
 
     def event_handler(event)
+      case event.command
+      when :__initialize__
+        initialize_handler(event)
+      when :__shutdown__
+        cleanup_handler
+        shutdown_handler(event)
+      when :__perform__
+        perform_handler(event)
+      when :__child_died__
+        child_died_handler(event.data[0], event.data[1])
+      when :__child_shutdown__
+        child_shutdown_handler(event.data)
+      when :__parent_died__
+        parent_died_handler(event.data[0], event.data[1])
+      when :initialize, :shutdown, :perform, :child_died, :child_shutdown, :parent_died
+        raise ActorReservedCommand.new("Reserved commands are not allowed (command=#{event.command}).")
+      else
+        custom_event_handler(event)
+      end
+    end
+
+    def custom_event_handler(event)
       result = nil
       @_actable.active_event = event
 
