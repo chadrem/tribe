@@ -108,6 +108,10 @@ module Tribe
       @_actable.mailbox.alive?
     end
 
+    def dead?
+      !alive?
+    end
+
     def name
       return @_actable.name
     end
