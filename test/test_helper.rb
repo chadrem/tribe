@@ -4,8 +4,6 @@ Coveralls.wear!
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'tribe'
 
-$main_thread = Thread.current
-
 class TestActor
   include Tribe::Actable
 
