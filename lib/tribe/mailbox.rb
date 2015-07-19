@@ -4,11 +4,11 @@ module Tribe
       @pool = pool
       @messages = []
       @alive = true
-      @mutex = Mutex.new
+      @lock = Mutex.new
     end
 
     def push(event, &block)
-      @mutex.synchronize do
+      @lock.synchronize do
         return nil unless @alive
 
         @messages.push(event)
@@ -19,7 +19,7 @@ module Tribe
     end
 
     def obtain_and_shift
-      @mutex.synchronize do
+      @lock.synchronize do
         return nil unless @alive
 
         if @owner_thread
@@ -36,7 +36,7 @@ module Tribe
     end
 
     def release(&block)
-      @mutex.synchronize do
+      @lock.synchronize do
         return nil unless @owner_thread == Thread.current
 
         @owner_thread = nil
@@ -47,7 +47,7 @@ module Tribe
     end
 
     def kill
-      @mutex.synchronize do
+      @lock.synchronize do
         @alive = false
         @messages.clear
       end
@@ -56,7 +56,7 @@ module Tribe
     end
 
     def alive?
-      @mutex.synchronize do
+      @lock.synchronize do
         return @alive
       end
     end

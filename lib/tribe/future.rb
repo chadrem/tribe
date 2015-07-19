@@ -2,7 +2,7 @@ module Tribe
   class Future
     def initialize(actor = nil)
       @state = :initialized
-      @mutex = Mutex.new
+      @lock = Mutex.new
       @condition = ConditionVariable.new
       @result = nil
       @success_callback = nil
@@ -13,19 +13,19 @@ module Tribe
     end
 
     def finished?
-      @mutex.synchronize do
+      @lock.synchronize do
         return @state == :finished
       end
     end
 
     def timeout?
-      @mutex.synchronnize do
+      @lock.synchronnize do
         return @state == :finished && @result.is_a?(Tribe::FutureTimeout)
       end
     end
 
     def result=(val)
-      @mutex.synchronize do
+      @lock.synchronize do
         return unless @state == :initialized
 
         @timer.cancel if @timer
@@ -61,7 +61,7 @@ module Tribe
     end
 
     def result
-      @mutex.synchronize do
+      @lock.synchronize do
         raise Tribe::FutureNoResult.new('Result must be set first.') unless @state == :finished
 
         return @result
@@ -69,17 +69,17 @@ module Tribe
     end
 
     def wait
-      @mutex.synchronize do
+      @lock.synchronize do
         return if @state == :finished
 
-        @condition.wait(@mutex)
+        @condition.wait(@lock)
 
         return nil
       end
     end
 
     def success?
-      @mutex.synchronize do
+      @lock.synchronize do
         raise Tribe::FutureNoResult.new('Result must be set first.') unless @state == :finished
 
         return !@result.is_a?(Exception)
@@ -91,7 +91,7 @@ module Tribe
     end
 
     def success(&block)
-      @mutex.synchronize do
+      @lock.synchronize do
         case @state
         when :initialized
           @success_callback = block
@@ -114,7 +114,7 @@ module Tribe
     end
 
     def failure(&block)
-      @mutex.synchronize do
+      @lock.synchronize do
         case @state
         when :initialized
           @failure_callback = block
@@ -137,7 +137,8 @@ module Tribe
     end
 
     def timeout
-      @mutex.synchronize do
+      @lock.synchronize do
+        @timeout
       end
     end
 
