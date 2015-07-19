@@ -27,6 +27,21 @@ class FutureTestParentActor < TestActor
     end
   end
 
+  def on_start_non_blocking_delayed(event)
+    @child = spawn(FutureTestChildActor, {}, :supervise => true)
+    @future = future!(@child, :compute, event.data)
+
+    sleep(0.5)
+
+    @future.success do |result|
+      @result = result
+    end
+
+    @future.failure do |exception|
+      @result = exception
+    end
+  end
+
   def on_start_blocking_timeout(event)
     @child = spawn(FutureTestChildActor)
     @future = future!(@child, :sleep)
@@ -126,6 +141,20 @@ class ActableFutureTest < Minitest::Test
     actor.shutdown!
   end
 
+  def test_non_blocking_success_delayed
+    actor = FutureTestParentActor.new
+    actor.run
+    actor.direct_message!(:start_non_blocking_delayed, 10)
+
+    poll { actor.result }
+
+    assert_equal(100, actor.future.result)
+    assert_equal(actor.future.result, actor.result)
+  ensure
+    actor.shutdown!
+    actor.child.shutdown!
+  end
+
   def test_non_blocking_exception
     actor = FutureTestParentActor.new
     actor.run
@@ -137,6 +166,20 @@ class ActableFutureTest < Minitest::Test
     assert_equal(actor.future.result, actor.result)
   ensure
     actor.shutdown!
+  end
+
+  def test_non_blocking_exception_delayed
+    actor = FutureTestParentActor.new
+    actor.run
+    actor.direct_message!(:start_non_blocking_delayed, nil)
+
+    poll { actor.result }
+
+    assert_kind_of(NoMethodError, actor.future.result)
+    assert_equal(actor.future.result, actor.result)
+  ensure
+    actor.shutdown!
+    actor.child.shutdown!
   end
 
   def test_non_blocking_timeout

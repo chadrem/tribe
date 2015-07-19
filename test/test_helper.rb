@@ -27,11 +27,13 @@ end
 # Poll until seconds pass or the block returns true.
 def poll(seconds = 1)
   count = seconds * 100
+
   while count > 0 && !yield
     count -= 1
     sleep 0.01
   end
-end
 
+  raise 'Poll timeout.' unless yield
+end
 
 require 'minitest/autorun'
