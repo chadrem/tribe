@@ -7,6 +7,7 @@ class InitializationTestActor < TestActor
 
   def on_initialize(event)
     @success = true
+    shutdown!
   end
 end
 
@@ -16,10 +17,9 @@ class ActableInitializationTest < Minitest::Test
     actor = InitializationTestActor.new
     actor.run
 
-    poll { actor.success }
+    poll { actor.dead? }
 
     assert_equal(:__initialize__, actor.events[0].command)
-    assert(actor.alive?)
   ensure
     actor.shutdown!
   end

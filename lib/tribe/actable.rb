@@ -21,11 +21,12 @@ module Tribe
       @_actable.pool = @_actable.dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
       @_actable.mailbox = Tribe::Mailbox.new(@_actable.pool)
       @_actable.registry = options[:registry] || Tribe.registry
-      @_actable.scheduler = options[:scheduler]
+      @_actable.scheduler = options[:scheduler] || Workers.scheduler
       @_actable.name = options[:name]
       @_actable.parent = options[:parent]
       @_actable.children = Tribe::SafeSet.new
       @_actable.supervisees = Tribe::SafeSet.new
+      @_actable.timers = Tribe::SafeSet.new
 
       @_actable.registry.register(self)
 
@@ -307,10 +308,6 @@ module Tribe
     private
 
     def timer!(delay, command, data = nil)
-      # Lazy instantiation for performance.
-      @_actable.scheduler ||= Workers.scheduler
-      @_actable.timers ||= Tribe::SafeSet.new
-
       timer = Workers::Timer.new(delay, :scheduler => @_actable.scheduler) do
         @_actable.timers.delete(timer)
         direct_message!(command, data)
@@ -322,10 +319,6 @@ module Tribe
     end
 
     def periodic_timer!(delay, command, data = nil)
-      # Lazy instantiation for performance.
-      @_actable.scheduler ||= Workers.scheduler
-      @_actable.timers ||= Tribe::SafeSet.new
-
       timer = Workers::PeriodicTimer.new(delay, :scheduler => @_actable.scheduler) do
         direct_message!(command, data)
         unless alive?

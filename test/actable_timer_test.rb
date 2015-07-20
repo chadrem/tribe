@@ -6,16 +6,23 @@ class TimerTestActor < TestActor
   private
 
   def on_start_timer(event)
-    @timer = timer!(0.01, :timer_fired)
+    @mode = :once
+    @timer = timer!(0.01, :fire)
   end
 
   def on_start_periodic_timer(event)
-    @timer = periodic_timer!(0.01, :timer_fired)
+    @mode = :periodic
+    @timer = periodic_timer!(0.01, :fire)
   end
 
-  def on_timer_fired(event)
+  def on_fire(event)
     @count ||= 0
     @count += 1
+    shutdown! if @mode == :once || @count > 5
+  end
+
+  def on_exception(event)
+    puts event.inspect
   end
 end
 
@@ -25,21 +32,21 @@ class ActableTimerTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_timer)
 
-    poll { !actor.count.nil? }
+    poll { actor.dead? }
 
     assert_equal(1, actor.count)
   ensure
     actor.shutdown!
   end
 
-  def test_periodic_timer
+  def test_periodic_timer 
     actor = TimerTestActor.new
     actor.run
     actor.direct_message!(:start_periodic_timer)
 
-    poll { actor.count && actor.count > 1 }
+    poll { actor.dead? }
 
-    assert(actor.count > 1)
+    assert(actor.count > 5)
   ensure
     actor.shutdown!
   end

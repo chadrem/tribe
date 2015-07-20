@@ -20,7 +20,7 @@ class ActableExceptionTest < Minitest::Test
     actor.run
     actor.direct_message!(:divide_by_zero)
 
-    poll { actor.exception }
+    poll { actor.dead? }
 
     assert_equal(:divide_by_zero, actor.events[1].command)
     assert_kind_of(ZeroDivisionError, actor.exception)

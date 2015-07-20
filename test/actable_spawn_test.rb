@@ -44,7 +44,7 @@ class ActablesSpawnTest < Minitest::Test
     child = parent.spawn!(SpawnTestChildActor)
     child.perform! { raise 'uh oh' }
 
-    poll { !parent.alive? }
+    poll { parent.dead? }
 
     assert_equal(false, parent.alive?)
     assert_equal(false, child.alive?)
@@ -61,7 +61,7 @@ class ActablesSpawnTest < Minitest::Test
     child = parent.spawn!(SpawnTestChildActor)
     parent.perform! { raise 'uh oh' }
 
-    poll { !child.alive? }
+    poll { child.dead? }
 
     assert_equal(false, parent.alive?)
     assert_equal(false, child.alive?)

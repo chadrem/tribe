@@ -9,8 +9,9 @@ class ActablePerformTest < Minitest::Test
     actor = PerformTestActor.new
     actor.run
     actor.perform! { success = true }
+    actor.shutdown!
 
-    poll { success }
+    poll { actor.dead? }
 
     assert_equal(:__perform__, actor.events[1].command)
     assert(success)
@@ -23,7 +24,7 @@ class ActablePerformTest < Minitest::Test
     actor.run
     actor.perform! { raise 'uh oh' }
 
-    poll { actor.exception }
+    poll { actor.dead? }
 
     assert_kind_of(RuntimeError, actor.exception)
     assert_equal(false, actor.alive?)

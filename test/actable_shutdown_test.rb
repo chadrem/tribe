@@ -15,9 +15,12 @@ class ActableShutdownTest < Minitest::Test
   def test_shutdown
     actor = ShutdownTestActor.new
     actor.run
+
+    assert(actor.alive?)
+
     actor.shutdown!
 
-    poll { actor.success }
+    poll { actor.dead? }
 
     assert_equal(:__shutdown__, actor.events[1].command)
     assert(actor.success)

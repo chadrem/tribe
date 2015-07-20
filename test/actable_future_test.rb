@@ -11,7 +11,8 @@ class FutureTestParentActor < TestActor
     @child = spawn!(FutureTestChildActor)
     @future = future!(@child, :compute, event.data)
 
-    wait(@future)
+    wait!(@future)
+    shutdown!
   end
 
   def on_start_non_blocking(event)
@@ -20,10 +21,12 @@ class FutureTestParentActor < TestActor
 
     @future.success do |result|
       @result = result
+      shutdown!
     end
 
     @future.failure do |exception|
       @result = exception
+      shutdown!
     end
   end
 
@@ -35,10 +38,12 @@ class FutureTestParentActor < TestActor
 
     @future.success do |result|
       @result = result
+      shutdown!
     end
 
     @future.failure do |exception|
       @result = exception
+      shutdown!
     end
   end
 
@@ -47,7 +52,8 @@ class FutureTestParentActor < TestActor
     @future = future!(@child, :sleep)
     @future.timeout = 0.1
 
-    wait(@future)
+    wait!(@future)
+    shutdown!
   end
 
   def on_start_non_blocking_timeout(event)
@@ -57,10 +63,12 @@ class FutureTestParentActor < TestActor
 
     @future.success do |result|
       @result = result
+      shutdown!
     end
 
     @future.failure do |exception|
       @result = exception
+      shutdown!
     end
   end
 end
@@ -92,7 +100,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_blocking, 10)
 
-    poll { actor.future && actor.future.result }
+    poll { actor.dead? }
 
     assert_equal(100, actor.future.result )
   ensure
@@ -104,7 +112,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_blocking, nil)
 
-    poll { actor.future && actor.future.result }
+    poll { actor.dead? }
 
     assert_kind_of(NoMethodError, actor.future.result)
   ensure
@@ -116,7 +124,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_blocking_timeout)
 
-    poll { actor.child && actor.child.success }
+    poll { actor.dead? }
 
     assert_equal(false, actor.future.success?)
     assert_kind_of(Tribe::FutureTimeout, actor.future.result)
@@ -133,7 +141,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_non_blocking, 10)
 
-    poll { actor.future && actor.future.result }
+    poll { actor.dead? }
 
     assert_equal(100, actor.future.result)
     assert_equal(100, actor.result)
@@ -146,7 +154,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_non_blocking_delayed, 10)
 
-    poll { actor.result }
+    poll { actor.dead? }
 
     assert_equal(100, actor.future.result)
     assert_equal(actor.future.result, actor.result)
@@ -160,7 +168,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_non_blocking, nil)
 
-    poll { actor.future && actor.future.result }
+    poll { actor.dead? }
 
     assert_kind_of(NoMethodError, actor.future.result)
     assert_equal(actor.future.result, actor.result)
@@ -173,7 +181,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_non_blocking_delayed, nil)
 
-    poll { actor.result }
+    poll { actor.dead? }
 
     assert_kind_of(NoMethodError, actor.future.result)
     assert_equal(actor.future.result, actor.result)
@@ -187,7 +195,7 @@ class ActableFutureTest < Minitest::Test
     actor.run
     actor.direct_message!(:start_non_blocking_timeout)
 
-    poll { actor.child && actor.child.success }
+    poll { actor.dead? }
 
     assert_kind_of(Tribe::FutureTimeout, actor.future.result)
     assert_equal(actor.future.result, actor.result)

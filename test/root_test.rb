@@ -11,7 +11,7 @@ class RootTest < Minitest::Test
     child = Tribe.root.spawn!(Tribe::Actor)
     child.perform! { raise 'uh oh' }
 
-    poll { !child.alive? }
+    poll { child.dead? }
 
     assert_equal(false, child.alive?)
     assert(Tribe.root.alive?)

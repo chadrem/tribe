@@ -25,7 +25,7 @@ class TestActor
 end
 
 # Poll until seconds pass or the block returns true.
-def poll(seconds = 1)
+def poll(seconds = 5)
   count = seconds * 100
 
   while count > 0 && !yield
