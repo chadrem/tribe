@@ -198,7 +198,7 @@ The actor won't process any other events until the future has a result.
         friend = registry['actor_b']
         future = future!(friend, :compute, 10)
 
-        wait(future) # The current thread will sleep until a result is available.
+        wait!(future) # The current thread will sleep until a result is available.
 
         if future.success?
           puts "ActorA (#{identifier}) future result: #{future.result}"
@@ -242,7 +242,7 @@ When a timeout occurs, the result of the future will be a ````Tribe::FutureTimeo
         future = future!(friend, :compute, 10)
         future.timeout = 2
 
-        wait(future) # The current thread will sleep until a result is available.
+        wait!(future) # The current thread will sleep until a result is available.
 
         if future.success?
           puts "ActorA (#{identifier}) future result: #{future.result}"
@@ -276,7 +276,7 @@ Below you will find a summary of performance recommendations for futures:
 
 - Use ````message!```` unless you really need ````future!```` since futures have overhead.
 - If you use ````future!````, prefer the non-blocking API over the blocking one.
-- If you use ````future!```` with the blocking API, the actor calling ````wait```` will create a temporary thread.  Since threads are a a finite resource, you should be careful to not create more of them than your operating system can simultaneously support.  There is no such concern with the non-blocking API.
+- If you use ````future!```` with the blocking API, the actor calling ````wait!```` will create a temporary thread.  Since threads are a a finite resource, you should be careful to not create more of them than your operating system can simultaneously support.  There is no such concern with the non-blocking API.
 
 ## Forwarding
 
@@ -468,14 +468,14 @@ Thus it is best to limit the use of ````on_exception```` to logging exceptions i
 Occassionally you will have a need to execute blocking code in one of your actors.
 The most common cases of blocking code are network IO, disk IO, database queries, and the ````sleep```` function.
 
-Actors have a convenient method named ````blocking```` that you should use to wrap such code.
+Actors have a convenient method named ````blocking!```` that you should use to wrap such code.
 Under the hood this method is expanding and contracting the thread pool to compensate for the blocked thread.
 This will prevent thread pool starvation.
 
-The ````blocking```` method is designed to work with dedicated and non-dedicated actors.
+The ````blocking!```` method is designed to work with dedicated and non-dedicated actors.
 By using this method in all of your actors, you will make it easy to convert between the two types.
 
-An actor's ````wait```` method (used with futures) already calls ````blocking```` for you.
+An actor's ````wait!```` method (used with futures) already calls ````blocking!```` for you.
 
 If for some reason Ruby can't create a new thread, Ruby will raise a ````ThreadError```` and your actor will die.
 Most modern operating systems can support many thousands of simultanous threads so refer to your operating system documentation as you may need to increase the limits.
@@ -485,7 +485,7 @@ To support in the tens of thousands, hundreds of thousands, or potentially milli
     class MyActor < Tribe::Actor
     private
       def on_start(event)
-        blocking do
+        blocking! do
           sleep 6
         end
       end

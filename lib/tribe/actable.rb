@@ -349,7 +349,7 @@ module Tribe
     # Wrap blocking code using this method to automatically expand/contract the pool.
     # This way you avoid potential deadlock with blocking code.
     # Not needed for dedicated actors since they already have their own thread.
-    def blocking
+    def blocking!
       if @_actable.dedicated
         yield
       else
@@ -362,7 +362,7 @@ module Tribe
       end
     end
 
-    def wait(future)
+    def wait!(future)
       blocking do
         future.wait
       end
