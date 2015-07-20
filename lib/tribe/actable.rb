@@ -80,7 +80,7 @@ module Tribe
       return direct_message!(:__perform__, block)
     end
 
-    def spawn(klass, actor_options = {}, spawn_options = {})
+    def spawn!(klass, actor_options = {}, spawn_options = {})
       actor_options[:parent] = self
 
       child = nil
@@ -306,7 +306,7 @@ module Tribe
 
     private
 
-    def timer(delay, command, data = nil)
+    def timer!(delay, command, data = nil)
       # Lazy instantiation for performance.
       @_actable.scheduler ||= Workers.scheduler
       @_actable.timers ||= Tribe::SafeSet.new
@@ -321,7 +321,7 @@ module Tribe
       return timer
     end
 
-    def periodic_timer(delay, command, data = nil)
+    def periodic_timer!(delay, command, data = nil)
       # Lazy instantiation for performance.
       @_actable.scheduler ||= Workers.scheduler
       @_actable.timers ||= Tribe::SafeSet.new

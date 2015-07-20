@@ -8,14 +8,14 @@ class FutureTestParentActor < TestActor
   private
 
   def on_start_blocking(event)
-    @child = spawn(FutureTestChildActor)
+    @child = spawn!(FutureTestChildActor)
     @future = future!(@child, :compute, event.data)
 
     wait(@future)
   end
 
   def on_start_non_blocking(event)
-    @child = spawn(FutureTestChildActor)
+    @child = spawn!(FutureTestChildActor)
     @future = future!(@child, :compute, event.data)
 
     @future.success do |result|
@@ -28,10 +28,10 @@ class FutureTestParentActor < TestActor
   end
 
   def on_start_non_blocking_delayed(event)
-    @child = spawn(FutureTestChildActor, {}, :supervise => true)
+    @child = spawn!(FutureTestChildActor, {}, :supervise => true)
     @future = future!(@child, :compute, event.data)
 
-    sleep(0.5)
+    sleep(0.2)
 
     @future.success do |result|
       @result = result
@@ -43,7 +43,7 @@ class FutureTestParentActor < TestActor
   end
 
   def on_start_blocking_timeout(event)
-    @child = spawn(FutureTestChildActor)
+    @child = spawn!(FutureTestChildActor)
     @future = future!(@child, :sleep)
     @future.timeout = 0.1
 
@@ -51,7 +51,7 @@ class FutureTestParentActor < TestActor
   end
 
   def on_start_non_blocking_timeout(event)
-    @child = spawn(FutureTestChildActor)
+    @child = spawn!(FutureTestChildActor)
     @future = future!(@child, :sleep)
     @future.timeout = 0.1
 
@@ -75,7 +75,7 @@ class FutureTestChildActor < Tribe::Actor
   end
 
   def on_sleep(event)
-    sleep(0.5)
+    sleep(0.2)
     @success = true
   rescue Exception => e
     puts e.inspect

@@ -26,11 +26,11 @@ class SpawnTestChildActor < Tribe::Actor
   end
 end
 
-class ActableSpawnTest < Minitest::Test
+class ActablesSpawnTest < Minitest::Test
   def test_spawn
     parent = SpawnTestParentActor.new
     parent.run
-    child = parent.spawn(SpawnTestChildActor)
+    child = parent.spawn!(SpawnTestChildActor)
 
     assert_kind_of(SpawnTestChildActor, child)
   ensure
@@ -41,7 +41,7 @@ class ActableSpawnTest < Minitest::Test
   def test_child_death_kills_parent
     parent = SpawnTestParentActor.new
     parent.run
-    child = parent.spawn(SpawnTestChildActor)
+    child = parent.spawn!(SpawnTestChildActor)
     child.perform! { raise 'uh oh' }
 
     poll { !parent.alive? }
@@ -58,7 +58,7 @@ class ActableSpawnTest < Minitest::Test
   def test_parent_death_kills_child
     parent = SpawnTestParentActor.new
     parent.run
-    child = parent.spawn(SpawnTestChildActor)
+    child = parent.spawn!(SpawnTestChildActor)
     parent.perform! { raise 'uh oh' }
 
     poll { !child.alive? }

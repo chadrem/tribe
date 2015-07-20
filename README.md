@@ -62,7 +62,7 @@ You should use the root actor to spawn all of your application specific actors.
       # Your code goes here.
     end
 
-    Tribe.root.spawn(MyActor)
+    Tribe.root.spawn!(MyActor)
 
 #### Command Handlers
 
@@ -107,7 +107,7 @@ Messages can include data that you want to pass between actors.  It is best prac
 
     # Create some named actors that are children of the root actor.
     100.times do |i|
-      Tribe.root.spawn(MyActor, :name => "my_actor_#{i}")
+      Tribe.root.spawn!(MyActor, :name => "my_actor_#{i}")
     end
 
     # Send an event to each actor.
@@ -128,7 +128,7 @@ Registries hold references to named actors so that you can easily find them.
 You don't have to create your own since there is a global one called ````Tribe.registry````.
 The Root actor is named 'root' and stored in the default registry.
 
-    actor = Tribe.root.spawn(Tribe::Actor, :name => 'some_actor')
+    actor = Tribe.root.spawn!(Tribe::Actor, :name => 'some_actor')
 
     if actor == Tribe.registry['some_actor']
       puts 'Successfully found some_actor in the registry.'
@@ -177,8 +177,8 @@ No waiting for a result is involved and the actor will continue to process other
       end
     end
 
-    actor_a = Tribe.root.spawn(ActorA, :name => 'actor_a')
-    actor_b = Tribe.root.spawn(ActorB, :name => 'actor_b')
+    actor_a = Tribe.root.spawn!(ActorA, :name => 'actor_a')
+    actor_b = Tribe.root.spawn!(ActorB, :name => 'actor_b')
 
     actor_a.direct_message!(:start)
 
@@ -220,8 +220,8 @@ The actor won't process any other events until the future has a result.
       end
     end
 
-    actor_a = Tribe.root.spawn(ActorA, :name => 'actor_a')
-    actor_b = Tribe.root.spawn(ActorB, :name => 'actor_b')
+    actor_a = Tribe.root.spawn!(ActorA, :name => 'actor_a')
+    actor_b = Tribe.root.spawn!(ActorB, :name => 'actor_b')
 
     actor_a.direct_message!(:start)
 
@@ -260,8 +260,8 @@ When a timeout occurs, the result of the future will be a ````Tribe::FutureTimeo
       end
     end
 
-    actor_a = Tribe.root.spawn(ActorA, :name => 'actor_a')
-    actor_b = Tribe.root.spawn(ActorB, :name => 'actor_b')
+    actor_a = Tribe.root.spawn!(ActorA, :name => 'actor_a')
+    actor_b = Tribe.root.spawn!(ActorB, :name => 'actor_b')
 
     actor_a.direct_message!(:start)
 
@@ -287,7 +287,7 @@ This lets you build routers that delegate work to other actors.
     class MyRouter < Tribe::Actor
       private
       def on_initialize(event)
-        @processors = 100.times.map { spawn(MyProcessor) }
+        @processors = 100.times.map { spawn!(MyProcessor) }
       end
 
       def on_process(event)
@@ -304,7 +304,7 @@ This lets you build routers that delegate work to other actors.
     end
 
     # Create the router.
-    router = Tribe.root.spawn(MyRouter, :name => 'router')
+    router = Tribe.root.spawn!(MyRouter, :name => 'router')
 
     # Send an event to the router and it will forward it to a random processor.
     100.times do |i|
@@ -323,8 +323,8 @@ Both one-shot and periodic timers are provided.
     class MyActor < Tribe::Actor
       private
       def on_initialize(event)
-        timer(1, :timer, 'hello once')
-        periodic_timer(1, :periodic_timer, 'hello many times')
+        timer!(1, :timer, 'hello once')
+        periodic_timer!(1, :periodic_timer, 'hello many times')
       end
 
       def on_timer(event)
@@ -338,7 +338,7 @@ Both one-shot and periodic timers are provided.
 
     # Create some named actors.
     10.times do |i|
-      Tribe.root.spawn(MyActor, :name => "my_actor_#{i}")
+      Tribe.root.spawn!(MyActor, :name => "my_actor_#{i}")
     end
 
     # Sleep in order to observe the timers.
@@ -354,7 +354,7 @@ Both one-shot and periodic timers are provided.
 
 Linking allows actors to group together so that they all live or die together.
 Such linking is useful for breaking up complex problems into multiple smaller units.
-To create a linked actor you use the ````spawn```` method.
+To create a linked actor you use the ````spawn!```` method.
 By default, if a linked actor dies, it will cause its parent and children to die too.
 You an override this behavior by using supervisors.
 
@@ -365,7 +365,7 @@ You an override this behavior by using supervisors.
         5.times do |i|
           name = "level2_#{i}"
           puts name
-          actor = spawn(Level2, :name => name)
+          actor = spawn!(Level2, :name => name)
           message!(actor, :spawn, i)
         end
       end
@@ -377,7 +377,7 @@ You an override this behavior by using supervisors.
       def on_spawn(event)
         5.times do |i|
           name = "level3_#{event.data}_#{i}"
-          actor = spawn(Level3, :name => name)
+          actor = spawn!(Level3, :name => name)
           message!(actor, :spawn)
         end
       end
@@ -392,7 +392,7 @@ You an override this behavior by using supervisors.
     end
 
     # Create the top-level actor.
-    top = Tribe.root.spawn(Level1, :name => 'level1')
+    top = Tribe.root.spawn!(Level1, :name => 'level1')
 
     # Tell the root actor to create the tree of children.
     top.direct_message!(:spawn)
@@ -402,7 +402,7 @@ You an override this behavior by using supervisors.
 A failure in a linked actor will cause all associated actors (parent and children) to die.
 Supervisors can be used to block the failure from propogating.
 You then have the option to re-spawn the failed actor.
-They are created by passing ````{:supervise => true}```` as a third argument to ````spawn````.
+They are created by passing ````{:supervise => true}```` as a third argument to ````spawn!````.
 You can then detect dead children by overriding ````on_child_died````.
 
     # Create the Parent actor class.
@@ -410,7 +410,7 @@ You can then detect dead children by overriding ````on_child_died````.
       private
       def on_child_died(event)
         puts "My child died.  Creating a new child."
-        $second_child = spawn(Child, {:name => 'Child'}, {:supervise => true})
+        $second_child = spawn!(Child, {:name => 'Child'}, {:supervise => true})
       end
     end
 
@@ -420,10 +420,10 @@ You can then detect dead children by overriding ````on_child_died````.
     end
 
     # Create the parent actor.
-    $parent = Tribe.root.spawn(Parent, {:name => 'Parent'})
+    $parent = Tribe.root.spawn!(Parent, {:name => 'Parent'})
 
     # Create the first child actor.
-    $first_child = $parent.spawn(Child, {:name => 'Child'}, {:supervise => true})
+    $first_child = $parent.spawn!(Child, {:name => 'Child'}, {:supervise => true})
 
     # Force the first child to die by executing an exception.
     $first_child.perform! { raise 'good bye' }
@@ -456,7 +456,7 @@ This is easily accomplished with the ````on_exception```` handler in a base clas
     class CustomActor < MyBaseActor
     end
 
-    actor = Tribe.root.spawn(CustomActor)
+    actor = Tribe.root.spawn!(CustomActor)
     actor.perform! { raise 'goodbye' }
 
 Note that you should be careful to make sure ````on_exception```` never raises an exception itself.
@@ -497,7 +497,7 @@ To support in the tens of thousands, hundreds of thousands, or potentially milli
 
     # Spawn some actors that go to sleep for a bit.
     100.times do
-      actor = Tribe.root.spawn(MyActor)
+      actor = Tribe.root.spawn!(MyActor)
       actor.direct_message!(:start)
     end
 
