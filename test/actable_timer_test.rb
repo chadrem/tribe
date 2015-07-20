@@ -20,10 +20,6 @@ class TimerTestActor < TestActor
     @count += 1
     shutdown! if @mode == :once || @count > 5
   end
-
-  def on_exception(event)
-    puts event.inspect
-  end
 end
 
 class ActableTimerTest < Minitest::Test
