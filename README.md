@@ -478,6 +478,8 @@ Tribe provides a shared instance of ````Logger```` for your convenience:
     Tribe.logger
 
 Every actor also has access to it through the ````logger```` convenience method.
+This local instance of the logger is wrapped in a proxy for your convenience.
+This way your code can assume the logger exists even if ````Tribe.logger```` is set to ````nil````.
 
 By default, the logger will log to STDOUT.
 You should change this to a file in your application.
