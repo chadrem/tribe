@@ -36,4 +36,6 @@ def poll(seconds = 5)
   raise 'Poll timeout.' unless yield
 end
 
+Tribe.logger = nil
+
 require 'minitest/autorun'

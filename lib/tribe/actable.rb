@@ -2,12 +2,12 @@ module Tribe
   module Actable
     include Workers::Helpers
 
+    private
+
     #
     # Initialization method.
     # Notes: Call this in your constructor.
     #
-
-    private
 
     def init_actable(options = {})
       # Symbols aren't GCed in JRuby so force string names.
@@ -15,12 +15,13 @@ module Tribe
         raise Tribe::ActorNameError.new('Name must be a string.')
       end
 
-      @logger = Workers::LogProxy.new(options[:logger])
       @_actable = Tribe::ActorState.new
+
       @_actable.dedicated = options[:dedicated] || false
       @_actable.pool = @_actable.dedicated ? Workers::Pool.new(:size => 1) : (options[:pool] || Workers.pool)
       @_actable.mailbox = Tribe::Mailbox.new(@_actable.pool)
       @_actable.registry = options[:registry] || Tribe.registry
+      @_actable.logger = Workers::LogProxy.new(options[:logger] || Tribe.logger)
       @_actable.scheduler = options[:scheduler] || Workers.scheduler
       @_actable.name = options[:name]
       @_actable.parent = options[:parent]
@@ -47,38 +48,21 @@ module Tribe
         process_events
       end
 
-      return nil
+      nil
     end
 
     def direct_message!(command, data = nil, src = nil)
       deliver_event!(Tribe::Event.new(command, data, src))
 
-      return nil
-    end
-
-    def message!(dest, command, data = nil)
-      event = Tribe::Event.new(command, data, self)
-
-      dest.deliver_event!(event)
-
-      return nil
-    end
-
-    def future!(dest, command, data = nil)
-      event = Tribe::Event.new(command, data, self)
-      event.future = future = Tribe::Future.new(self)
-
-      dest.deliver_event!(event)
-
-      return future
+      nil
     end
 
     def shutdown!
-      return direct_message!(:__shutdown__)
+      direct_message!(:__shutdown__)
     end
 
     def perform!(&block)
-      return direct_message!(:__perform__, block)
+      direct_message!(:__perform__, block)
     end
 
     def spawn!(klass, actor_options = {}, spawn_options = {})
@@ -102,7 +86,7 @@ module Tribe
         @_actable.supervisees.add(child)
       end
 
-      return child
+      child
     end
 
     def alive?
@@ -114,23 +98,27 @@ module Tribe
     end
 
     def name
-      return @_actable.name
+      @_actable.name
     end
 
     def identifier
-      return @_actable.name ? "#{object_id}:#{@_actable.name}" : object_id
+      @_actable.name ? "#{object_id}:#{@_actable.name}" : object_id
     end
 
     def exception
-      return @_actable.exception
+      @_actable.exception
     end
 
     def registry
-      return @_actable.registry
+      @_actable.registry
     end
 
     def pool
-      return @_actable.pool
+      @_actable.pool
+    end
+
+    def logger
+      @_actable.logger
     end
 
     #
@@ -179,7 +167,7 @@ module Tribe
         process_events
       end
 
-      return nil
+      nil
     end
 
     def event_handler(event)
@@ -220,7 +208,7 @@ module Tribe
         @_actable.active_event = nil
       end
 
-      return nil
+      nil
     end
 
     def initialize_handler(event)
@@ -236,9 +224,14 @@ module Tribe
       @_actable.children.clear
       @_actable.supervisees.clear
 
+      log_exception_handler(exception)
       on_exception(Event.new(:exception, {:exception => exception}))
 
-      return nil
+      nil
+    end
+
+    def log_exception_handler(exception)
+      logger.error("EXCEPTION: #{exception.message}\n#{exception.backtrace.join("\n")}\n--")
     end
 
     def shutdown_handler(event)
@@ -252,13 +245,13 @@ module Tribe
 
       on_shutdown(Event.new(:shutdown, {}))
 
-      return nil
+      nil
     end
 
     def perform_handler(event)
       event.data.call
 
-      return nil
+      nil
     end
 
     def cleanup_handler(exception = nil)
@@ -268,7 +261,7 @@ module Tribe
       @_actable.registry.unregister(self)
       @_actable.timers.each { |t| t.cancel } if @_actable.timers
 
-      return nil
+      nil
     end
 
     def child_died_handler(child, exception)
@@ -281,7 +274,7 @@ module Tribe
         raise Tribe::ActorChildDied.new("#{child.identifier} died.")
       end
 
-      return nil
+      nil
     end
 
     def child_shutdown_handler(child)
@@ -290,14 +283,14 @@ module Tribe
 
       on_child_shutdown(Event.new(:child_shutdown, {:child => child}))
 
-      return nil
+      nil
     end
 
     def parent_died_handler(parent, exception)
       on_parent_died(Event.new(:parent_died, {:parent => parent, :exception => exception}))
       raise Tribe::ActorParentDied.new("#{parent.identifier} died.")
 
-      return nil
+      nil
     end
 
     #
@@ -307,6 +300,23 @@ module Tribe
 
     private
 
+    def message!(dest, command, data = nil)
+      event = Tribe::Event.new(command, data, self)
+
+      dest.deliver_event!(event)
+
+      nil
+    end
+
+    def future!(dest, command, data = nil)
+      event = Tribe::Event.new(command, data, self)
+      event.future = future = Tribe::Future.new(self)
+
+      dest.deliver_event!(event)
+
+      future
+    end
+
     def timer!(delay, command, data = nil)
       timer = Workers::Timer.new(delay, :scheduler => @_actable.scheduler) do
         @_actable.timers.delete(timer)
@@ -315,7 +325,7 @@ module Tribe
 
       @_actable.timers.add(timer)
 
-      return timer
+      timer
     end
 
     def periodic_timer!(delay, command, data = nil)
@@ -329,19 +339,19 @@ module Tribe
 
       @_actable.timers.add(timer)
 
-      return timer
+      timer
     end
 
     def forward!(dest)
       dest.deliver_event!(@_actable.active_event)
       @_actable.active_event = nil
 
-      return nil
+      nil
     end
 
     # Wrap blocking code using this method to automatically expand/contract the pool.
-    # This way you avoid potential deadlock with blocking code.
-    # Not needed for dedicated actors since they already have their own thread.
+    # This way you avoid potential thread starvation. Not needed for dedicated actors
+    # since they already have their own thread.
     def blocking!
       if @_actable.dedicated
         yield

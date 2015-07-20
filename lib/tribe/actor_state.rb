@@ -12,5 +12,6 @@ module Tribe
     attr_accessor :children
     attr_accessor :supervisees
     attr_accessor :exception
+    attr_accessor :logger
   end
 end

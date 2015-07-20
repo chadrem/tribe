@@ -471,6 +471,17 @@ To support in the tens of thousands, hundreds of thousands, or potentially milli
     # The pool size is back to the default size.
     puts "Pool size (after): #{Workers.pool.size}"
 
+## Logging
+
+Tribe provides a shared instance of ````Logger```` for your convenience:
+
+    Tribe.logger
+
+Every actor also has access to it through the ````logger```` convenience method.
+
+By default, the logger will log to STDOUT.
+You should change this to a file in your application.
+
 ## Debugging
 
 Tribe is written in pure Ruby so it will work with all existing debuggers that support Ruby & threads.
