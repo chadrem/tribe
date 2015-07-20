@@ -363,7 +363,7 @@ module Tribe
     end
 
     def wait!(future)
-      blocking do
+      blocking! do
         future.wait
       end
     end
