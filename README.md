@@ -358,44 +358,21 @@ To create a linked actor you use the ````spawn!```` method.
 By default, if a linked actor dies, it will cause its parent and children to die too.
 You an override this behavior by using supervisors.
 
-    # Create the top-level actor class.
-    class Level1 < Tribe::Actor
-      private
-      def on_spawn(event)
-        5.times do |i|
-          name = "level2_#{i}"
-          puts name
-          actor = spawn!(Level2, :name => name)
-          message!(actor, :spawn, i)
-        end
-      end
-    end
+    # Create some linked actors.
+    top = Tribe::Actor.new
+    middle = top.spawn!(Tribe::Actor)
+    bottom = middle.spawn!(Tribe::Actor)
 
-    # Create the mid-level actor class.
-    class Level2 < Tribe::Actor
-      private
-      def on_spawn(event)
-        5.times do |i|
-          name = "level3_#{event.data}_#{i}"
-          actor = spawn!(Level3, :name => name)
-          message!(actor, :spawn)
-        end
-      end
-    end
-
-    # Create the bottom level actor class.
-    class Level3 < Tribe::Actor
-      private
-      def on_spawn(event)
-        puts "#{identifier} hello world!"
-      end
-    end
-
-    # Create the top-level actor.
-    top = Tribe.root.spawn!(Level1, :name => 'level1')
-
-    # Tell the root actor to create the tree of children.
-    top.direct_message!(:spawn)
+    # Force an exception on the middle actor (it has a parent and a child).
+    middle.perform! { raise 'uh oh' }
+    
+    # Wait.
+    sleep(3)
+    
+    # All actors died together.
+    puts "Top: #{top.alive?}: #{top.exception.class}"
+    puts "Middle: #{middle.alive?}: #{middle.exception.class}"
+    puts "Bottom: #{bottom.alive?}: #{bottom.exception.class}"
 
 ## Supervisors
 
@@ -405,40 +382,21 @@ You then have the option to re-spawn the failed actor.
 They are created by passing ````{:supervise => true}```` as a third argument to ````spawn!````.
 You can then detect dead children by overriding ````on_child_died````.
 
-    # Create the Parent actor class.
-    class Parent < Tribe::Actor
-      private
-      def on_child_died(event)
-        puts "My child died.  Creating a new child."
-        $second_child = spawn!(Child, {:name => 'Child'}, {:supervise => true})
-      end
-    end
+    # Create some linked actors.
+    top = Tribe::Actor.new
+    middle = top.spawn!(Tribe::Actor, {}, {:supervise => true})
+    bottom = middle.spawn!(Tribe::Actor)
 
-    # Create the Child actor class.
-    class Child < Tribe::Actor
-      private
-    end
-
-    # Create the parent actor.
-    $parent = Tribe.root.spawn!(Parent, {:name => 'Parent'})
-
-    # Create the first child actor.
-    $first_child = $parent.spawn!(Child, {:name => 'Child'}, {:supervise => true})
-
-    # Force the first child to die by executing an exception.
-    $first_child.perform! { raise 'good bye' }
-
-    # Wait for the first child and parent to run.
+    # Force an exception on the middle actor (it has a parent and a child).
+    middle.perform! { raise 'uh oh' }
+    
+    # Wait.
     sleep(3)
-
-    # Check if the parent is alive.
-    puts "Parent is alive? #{$parent.alive?}"
-
-    # Check if the first child is alive.
-    puts "First child is alive? #{$first_child.alive?}"
-
-    # Check if the second child is alive.
-    puts "Second child is alive? #{$second_child.alive?}"
+    
+    # Top actor lives because it's a supervisor.  The other two die.
+    puts "Top: #{top.alive?}: #{top.exception.class}"
+    puts "Middle: #{middle.alive?}: #{middle.exception.class}"
+    puts "Bottom: #{bottom.alive?}: #{bottom.exception.class}"
 
 #### Logging exceptions
 
