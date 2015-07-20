@@ -490,7 +490,7 @@ Tribe is written in pure Ruby so it will work with all existing debuggers that s
 [Byebug] (https://github.com/deivid-rodriguez/byebug) is commonly used with MRI Ruby 2.X and will let you set breakpoints.
 
 The most common problem you will encounter with actors is that they die due to exceptions.
-You can access the exception that caused an actor to die by calling the ````exception```` method on the actor:
+You can access the exception by calling the ````exception```` method on the actor:
 
     actor = Tribe::Actor.new
     actor.perform! { raise 'goodbye' }
