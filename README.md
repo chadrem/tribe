@@ -147,7 +147,7 @@ Non-blocking futures are asynchronous and use callbacks.
 No waiting for a result is involved and the actor will continue to process other events.
 
     class ActorA < Tribe::Actor
-    private
+      private
       def on_start(event)
         friend = registry['actor_b']
         future = future!(friend, :compute, 10)
@@ -163,7 +163,7 @@ No waiting for a result is involved and the actor will continue to process other
     end
 
     class ActorB < Tribe::Actor
-    private
+      private
       def on_shutdown(event)
         puts "MyActor (#{identifier}) is shutting down."
       end
@@ -193,7 +193,7 @@ Blocking futures are synchronous.
 The actor won't process any other events until the future has a result.
 
     class ActorA < Tribe::Actor
-    private
+      private
       def on_start(event)
         friend = registry['actor_b']
         future = future!(friend, :compute, 10)
@@ -209,7 +209,7 @@ The actor won't process any other events until the future has a result.
     end
 
     class ActorB < Tribe::Actor
-    private
+      private
       def on_compute(event)
         return factorial(event.data)
       end
@@ -236,7 +236,7 @@ Futures can be confgured to timeout after a specified number of seconds.
 When a timeout occurs, the result of the future will be a ````Tribe::FutureTimeout```` exception.
 
     class ActorA < Tribe::Actor
-    private
+      private
       def on_start(event)
         friend = registry['actor_b']
         future = future!(friend, :compute, 10)
@@ -253,7 +253,7 @@ When a timeout occurs, the result of the future will be a ````Tribe::FutureTimeo
     end
 
     class ActorB < Tribe::Actor
-    private
+      private
       def on_compute(event)
         sleep(4) # Force a timeout.
         return event.data * 2
@@ -404,7 +404,7 @@ It is common practice to log actor exceptions or print them to stdout.
 This is easily accomplished with the ````on_exception```` handler in a base class:
 
     class MyBaseActor < Tribe::Actor
-    private
+      private
       def on_exception(event)
         e = event.data[:exception]
         puts "#{e.class.name}: #{e.message}:\n#{e.backtrace.join("\n")}"
@@ -441,7 +441,7 @@ Most modern operating systems can support many thousands of simultanous threads 
 To support in the tens of thousands, hundreds of thousands, or potentially millions of actors, you will need to use non-blocking actors.
 
     class MyActor < Tribe::Actor
-    private
+      private
       def on_start(event)
         blocking! do
           sleep 6
@@ -480,6 +480,17 @@ Tribe provides a shared instance of ````Logger```` for your convenience:
 Every actor also has access to it through the ````logger```` convenience method.
 This local instance of the logger is wrapped in a proxy for your convenience.
 This way your code can assume the logger exists even if ````Tribe.logger```` is set to ````nil````.
+
+    class MyActor < Tribe::Actor
+      private
+      def on_initialize(event)
+        logger.debug("hello world.")
+      end
+    end
+
+    actor = MyActor.new
+    actor.perform! { raise 'uh oh' }
+
 
 By default, the logger will log to STDOUT.
 You should change this to a file in your application.
