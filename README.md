@@ -1,10 +1,10 @@
 # Tribe [![Build Status](https://travis-ci.org/chadrem/tribe.svg)](https://travis-ci.org/chadrem/tribe) [![Coverage Status](https://coveralls.io/repos/chadrem/tribe/badge.svg?branch=master&service=github)](https://coveralls.io/github/chadrem/tribe?branch=master)
 
-Tribe is a Ruby gem that implements the [actor model] (http://en.wikipedia.org/wiki/Actor_model "actors") in an event-driven way.
+Tribe is a Ruby gem that implements the [actor model](http://en.wikipedia.org/wiki/Actor_model) in an event-driven way.
 
 Tribe focuses on high performance, low latency, a simple API, and flexibility.
 It's goal is to support at least one million actors running on a small group of threads.
-It is built on top of the [Workers] (https://github.com/chadrem/workers "Workers") gem.
+It is built on top of the [Workers](https://github.com/chadrem/workers) gem.
 
 ## Contents
 
@@ -511,7 +511,7 @@ You can access the exception by calling the ````exception```` method on the acto
 
 ## Benchmarks
 
-Please see the [performance] (https://github.com/chadrem/tribe/wiki/Performance "performance") wiki page for more information.
+Please see the [performance](https://github.com/chadrem/tribe/wiki/Performance) wiki page for more information.
 
 ## Contributing
 
