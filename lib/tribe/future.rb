@@ -74,7 +74,13 @@ module Tribe
       @lock.synchronize do
         return if @state == :finished
 
-        @condition.wait(@lock)
+        # The wait can return even if nothing called @conditional.signal,
+        # so we need to check to see if the condition actually changed.
+        # See https://github.com/chadrem/workers/issues/7
+        loop do
+          @condition.wait(@lock)
+          break if @state == :finished
+        end
 
         return nil
       end
