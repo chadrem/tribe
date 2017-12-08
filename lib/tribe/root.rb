@@ -16,7 +16,7 @@ module Tribe
       # Let the children die silently since the root actor should live forever.
       begin
         super
-      rescue Tribe::ActorChildDied => e
+      rescue Tribe::ActorChildDied
       end
     end
   end

@@ -73,7 +73,7 @@ module Tribe
       if spawn_options[:no_raise_on_failure]
         begin
           child = klass.new(actor_options)
-        rescue Exception => e
+        rescue Exception
           return false
         end
       else

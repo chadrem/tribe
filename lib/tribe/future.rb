@@ -8,6 +8,8 @@ module Tribe
       @success_callback = nil
       @failure_callback = nil
       @actor = actor
+      @timer = nil
+      @timeout = nil
 
       return nil
     end

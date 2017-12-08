@@ -5,6 +5,7 @@ module Tribe
       @messages = []
       @alive = true
       @lock = Mutex.new
+      @owner_thread = nil
     end
 
     def push(event, &block)
