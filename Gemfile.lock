@@ -7,7 +7,7 @@ GIT
 PATH
   remote: .
   specs:
-    tribe (0.6.3)
+    tribe (0.6.4)
       workers (~> 0.6.1)
 
 GEM
