@@ -516,7 +516,7 @@ Please see the [performance](https://github.com/chadrem/tribe/wiki/Performance) 
 
 ## Ruby's main thread
 
-Please read [Ruby's main thread](https://github.com/chadrem/workers#rubys-main-thread). Tribe is asynchrous and it is your responsibility to keep the main thread from exiting.
+Please read [Ruby's main thread](https://github.com/chadrem/workers#rubys-main-thread) on the Workers gem homepage. Tribe is asynchrous and it is your responsibility to keep the main thread from exiting. 
 
 ## Contributing
 
