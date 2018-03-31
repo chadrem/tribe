@@ -26,6 +26,7 @@ It is built on top of the [Workers](https://github.com/chadrem/workers) gem.
 - [Blocking code](#blocking-code)
 - [Debugging](#debugging)
 - [Benchmarks](#benchmarks)
+- [Note on Ruby's main thread](#note-on-rubys-main-thread)
 - [Contributing](#contributing)
 
 ## Installation
@@ -512,6 +513,10 @@ You can access the exception by calling the ````exception```` method on the acto
 ## Benchmarks
 
 Please see the [performance](https://github.com/chadrem/tribe/wiki/Performance) wiki page for more information.
+
+## Note on Ruby's main thread
+
+Please read [Note on Ruby's main thread](https://github.com/chadrem/workers#note-on-rubys-main-thread). Tribe is asynchrous and it is your responsibility to keep the main thread from exiting.
 
 ## Contributing
 
